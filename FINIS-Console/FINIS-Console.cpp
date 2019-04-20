@@ -46,13 +46,14 @@ int main() {
 	camera->GetFeatureByName("AcquisitionStart", feature);
 	feature->RunCommand();
 
+	/*
 	//Initial Set up for the IMU
 	uint32_t defaultBaudeRate = 115200;
 	std::string defaultSensorPort = "COM12";
 	//TODO: Somehow I am not declaring my IMU correctly :/ 
 	//IMU imu = IMU(defaultSensorPort, defaultBaudeRate);
 	//imu.ConnectIMU();
-
+	*/
 
 	// Open the pxd opject
 	pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/ConsoleTesting/ConsoleTesting/Resources/XCAPVideoSetup16Bit15Hz.fmt");

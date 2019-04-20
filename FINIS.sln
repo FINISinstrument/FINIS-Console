@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.489
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FINIS-Console", "FINIS-Console\ConsoleTesting.vcxproj", "{6347107B-C126-49F2-AE71-F1DE8E24900A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FINIS-Console", "FINIS-Console\FINIS-Console.vcxproj", "{6347107B-C126-49F2-AE71-F1DE8E24900A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
