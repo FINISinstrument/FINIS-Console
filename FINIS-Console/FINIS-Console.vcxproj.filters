@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="FINIS-Console.cpp" />
+    <ClCompile Include="IMU.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="src\port.cpp" />
+    <ClCompile Include="src\attitude.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\compositedata.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\conversions.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\criticalsection.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dllvalidator.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\error_detection.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\event.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ezasyncdata.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\memoryport.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\packet.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\packetfinder.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\position.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\searcher.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sensors.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serialport.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thread.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\types.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\util.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utilities.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vntime.cpp">
+      <Filter>IMU</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="IMU.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\VimbaCPP\Include\VimbaCPP.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\VimbaC\Include\VmbCommonTypes.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="XCLIB\xcliball.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FINIS-Console.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="IMU">
+      <UniqueIdentifier>{634e2188-d118-4171-85e1-f9bec3b5a147}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{d712d2bd-a56e-4e79-9bc6-9a770152a2a4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

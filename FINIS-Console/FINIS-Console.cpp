@@ -34,9 +34,9 @@ int main() {
 
 	sys.OpenCameraByID("DEV_64AA2C448F1F2349", VmbAccessModeFull, camera);
 	camera->GetFeatureByName("ExposureTime", feature);
-	feature->SetValue(60000.0);
+	feature->SetValue(30000.0);
 	camera->GetFeatureByName("AcquisitionFrameRate", feature);
-	feature->SetValue(15.0);
+	feature->SetValue(30.0);
 	camera->GetFeatureByName("SensorGain", feature);
 	feature->SetValue("Gain1");
 	camera->GetFeatureByName("SensorTemperatureSetpointValue", feature);
@@ -56,7 +56,7 @@ int main() {
 	*/
 
 	// Open the pxd opject
-	pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/ConsoleTesting/ConsoleTesting/Resources/XCAPVideoSetup16Bit15Hz.fmt");
+	pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/ConsoleTesting/ConsoleTesting/Resources/XCAPVideoSetup16Bit30Hz.fmt");
 	Sleep(1000);
 	std::cout << "Opened frame grabber\n";
 
