@@ -72,43 +72,42 @@ int main() {
 		std::cin >> cmd;
 
 		switch (cmd) {
-		case 0: { //end the program
-			done = true;
-			break;
-		}
-		case 1: {// Snap a picture!
-			pxd_goSnap(1, 1);
-			Sleep(50);
-			std::cout << "Snap picture\n";
-			// save image
-			pxd_saveTiff(1, "C:/Users/FINIS/Desktop/image.tiff", 1, 0, 0, -1, -1, 0, 0);
-			Sleep(100);
-			std::cout << "Save image\n";
+			case 0: { //end the program
+				done = true;
+				break;
+			}
+			case 1: {// Snap a picture!
+				pxd_goSnap(1, 1);
+				Sleep(50);
+				std::cout << "Snap picture\n";
+				// save image
+				pxd_saveTiff(1, "C:/Users/FINIS/Desktop/image.tiff", 1, 0, 0, -1, -1, 0, 0);
+				Sleep(100);
+				std::cout << "Save image\n";
 
-			break;
-		}
-		case 2: { //GET data from IMU (nonAsync) //TODO: make this Asynchronous
-			//imu.getNonAsyncData();
-		}
-		default: { //print out all the options for keystrokes
-			std::cout << "Not a valid argument type\n";
-			std::cout << "0: End Program\n";
-			std::cout << "1: Snap a photo\n";
-			std::cout << "2: Get real time LLA data\n";
+				break;
+			}
+			case 2: { //GET data from IMU (nonAsync) //TODO: make this Asynchronous
+				//imu.getNonAsyncData();
+			}
+			default: { //print out all the options for keystrokes
+				std::cout << "Not a valid argument type\n";
+				std::cout << "0: End Program\n";
+				std::cout << "1: Snap a photo\n";
+				std::cout << "2: Get real time LLA data\n";
 
-			break;
-		}
+				break;
+			}
 		}
 
 		// Disconnect the IMU
 		//imu.~IMU();
+	} // End while
+	// Close the pxd object
+	pxd_PIXCIclose();
+	std::cout << "Hello World!\n";
 
-		// Close the pxd object
-		pxd_PIXCIclose();
-		std::cout << "Hello World!\n";
-
-		camera->Close();
-		sys.Shutdown();
-		std::cout << "Shutdown\n";
-	}
+	camera->Close();
+	sys.Shutdown();
+	std::cout << "Shutdown\n";
 }
