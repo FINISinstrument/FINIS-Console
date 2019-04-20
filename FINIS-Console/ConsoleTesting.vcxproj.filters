@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\VN">
+      <UniqueIdentifier>{b7ffe443-9631-4419-9f68-4f7d482450ff}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XCLIB\xcliball.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\VimbaCPP\Include\VimbaCPP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\VimbaC\Include\VmbCommonTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IMU.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IMU.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\attitude.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\compositedata.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\criticalsection.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\conversions.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dllvalidator.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\error_detection.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\event.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ezasyncdata.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\memoryport.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\packet.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\packetfinder.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\port.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\position.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\searcher.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serialport.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sensors.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thread.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\types.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\util.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utilities.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vntime.cpp">
+      <Filter>Source Files\VN</Filter>
+    </ClCompile>
+    <ClCompile Include="FINIS-Console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ConsoleTesting.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
