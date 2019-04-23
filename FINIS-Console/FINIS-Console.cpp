@@ -56,13 +56,17 @@ int main() {
 	*/
 
 	// Open the pxd opject
-	pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/ConsoleTesting/ConsoleTesting/Resources/XCAPVideoSetup16Bit30Hz.fmt");
+	std::cout << "Opening frame grabber...\n";
+	int openError = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup16Bit30Hz.fmt");
+	if (openError < 0) {
+		printf("error: %s\n", pxd_mesgErrorCode(openError));
+	}
 	Sleep(1000);
 	std::cout << "Opened frame grabber\n";
 
 	// Go live
 	pxd_goLive(1, 1);
-	Sleep(1000);
+	while (!pxd_goneLive(1,0)) { Sleep(0); }
 	std::cout << "Gone live\n";
 
 	int cmd;
@@ -81,9 +85,13 @@ int main() {
 				Sleep(50);
 				std::cout << "Snap picture\n";
 				// save image
-				pxd_saveTiff(1, "C:/Users/FINIS/Desktop/image.tiff", 1, 0, 0, -1, -1, 0, 0);
+				int saveTiffError = pxd_saveTiff(1, "C:/Users/FINIS/Desktop/image.tiff", 1, 0, 0, -1, -1, 0, 0);
+				if (saveTiffError < 0) {
+					printf("error: %s\n", pxd_mesgErrorCode(saveTiffError));
+				}
 				Sleep(100);
-				std::cout << "Save image\n";
+				std::cout << "\nSave image\n";
+
 
 				break;
 			}
