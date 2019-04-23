@@ -5,8 +5,10 @@
  * Constructor
  * Initialize startup behavior, but do not open the camera
  */
-Vimba::Vimba() {
-	sys = AVT::VmbAPI::VimbaSystem::GetInstance();
+Vimba::Vimba() :
+	sys(AVT::VmbAPI::VimbaSystem::GetInstance())
+{
+
 }
 
 /**
