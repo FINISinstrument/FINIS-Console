@@ -160,6 +160,8 @@
     <ClInclude Include="include\VimbaC\Include\VmbCommonTypes.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Shutter.h" />
+    <ClInclude Include="Vimba.h" />
     <ClInclude Include="XCLIB\xcliball.h" />
   </ItemGroup>
   <ItemGroup>
@@ -171,6 +173,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Shutter.cpp" />
     <ClCompile Include="src\attitude.cpp" />
     <ClCompile Include="src\compositedata.cpp" />
     <ClCompile Include="src\conversions.cpp" />
@@ -192,6 +195,7 @@
     <ClCompile Include="src\util.cpp" />
     <ClCompile Include="src\utilities.cpp" />
     <ClCompile Include="src\vntime.cpp" />
+    <ClCompile Include="Vimba.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FINIS-Console.rc" />
