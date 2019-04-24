@@ -65,6 +65,8 @@
     <ClCompile Include="src\vntime.cpp">
       <Filter>IMU</Filter>
     </ClCompile>
+    <ClCompile Include="Vimba.cpp" />
+    <ClCompile Include="Shutter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IMU.h">
@@ -85,6 +87,8 @@
     <ClInclude Include="XCLIB\xcliball.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="Vimba.h" />
+    <ClInclude Include="Shutter.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FINIS-Console.rc" />
