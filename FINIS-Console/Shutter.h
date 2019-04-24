@@ -31,5 +31,4 @@ class Shutter {
 
 		int portNumber;
 		int maxPortNumber;
-		wchar_t PortName[] = L"\\\\.\\COM7";
 };

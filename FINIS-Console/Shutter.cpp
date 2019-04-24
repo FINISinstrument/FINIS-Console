@@ -1,3 +1,4 @@
+#include "pch.h"
 #include <iostream>
 #include "Shutter.h"
 
@@ -32,7 +33,7 @@ void Shutter::openShutter() {
 	}
 
 	// Copy command into buffer
-	strcpy(cmdBuffer, "relay on 0");
+	strcpy_s(cmdBuffer, "relay on 0");
 	// Append 0x0D to emulate ENTER key
 	cmdBuffer[10] = 0x0D;
 
@@ -44,7 +45,7 @@ void Shutter::openShutter() {
 	WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL);
 
 	// Copy command into buffer
-	strcpy(cmdBuffer, "relay off 0");
+	strcpy_s(cmdBuffer, "relay off 0");
 	// Append 0x0D to emulate ENTER key
 	cmdBuffer[11] = 0x0D;
 
@@ -72,7 +73,7 @@ void Shutter::closeShutter() {
 	}
 
 	// Copy command into buffer
-	strcpy(cmdBuffer, "relay on 1");
+	strcpy_s(cmdBuffer, "relay on 1");
 	// Append 0x0D to emulate ENTER key
 	cmdBuffer[10] = 0x0D;
 
@@ -84,7 +85,7 @@ void Shutter::closeShutter() {
 	WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL);
 
 	// Copy command into buffer
-	strcpy(cmdBuffer, "relay off 1");
+	strcpy_s(cmdBuffer, "relay off 1");
 	// Append 0x0D to emulate ENTER key
 	cmdBuffer[11] = 0x0D;
 
@@ -104,7 +105,9 @@ bool Shutter::connectPort() {
 	}
 	// Open handle to COM port.
 	// Handle is needed to send commands and receive results
+	wchar_t PortName[14];
 	do {
+		wsprintf(PortName, L"\\\\.\\COM%d", portNumber);
 		hComPort = CreateFile(PortName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
 		portNumber++;
 	} while (hComPort == INVALID_HANDLE_VALUE && portNumber < maxPortNumber);
