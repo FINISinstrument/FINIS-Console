@@ -7,6 +7,9 @@
 #include <memory>
 
 #include <windows.h>
+
+// Shutter header
+#include "Shutter.h"
 // PIXCI header
 #include "XCLIB/xcliball.h"
 
@@ -19,6 +22,8 @@
 int main() {
 	Vimba vimba = Vimba();
 	vimba.startCamera();
+
+	Shutter shutter = Shutter();
 
 	/*
 	//Initial Set up for the IMU
@@ -69,6 +74,14 @@ int main() {
 
 				break;
 			}
+			case 3: {
+				shutter.openShutter();
+				break;
+			}
+			case 4: {
+				shutter.closeShutter();
+				break;
+			}
 			case 2: { //GET data from IMU (nonAsync) //TODO: make this Asynchronous
 				//imu.getNonAsyncData();
 			}
@@ -77,6 +90,8 @@ int main() {
 				std::cout << "0: End Program\n";
 				std::cout << "1: Snap a photo\n";
 				std::cout << "2: Get real time LLA data\n";
+				std::cout << "3: Open shutter\n";
+				std::cout << "4: Close shutter\n";
 
 				break;
 			}
