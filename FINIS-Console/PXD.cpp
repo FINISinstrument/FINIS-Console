@@ -28,7 +28,7 @@ PXD::PXD(std::string saveLocation, bool isThirtyFPS) {
 
 PXD::~PXD() {
 	if (isOpen) {
-		pxd_PIXICclose();
+		pxd_PIXCIclose(1);
 	}
 }
 
@@ -53,7 +53,7 @@ bool PXD::recordFrames(int frameCount) {
 }
 bool PXD::saveFrames(int frameCount) {
 	for (int i = 0; i < frameCount; i++) {
-		pxd_saveTiff(1, folderPath + "/" + dateTime + "/" + std::to_string(i) + ".tif", i, 0, 0, -1, -1, 0, 0);
+		pxd_saveTiff(1, (folderPath + "/" + dateTime + "/" + std::to_string(i) + ".tif").c_str(), i, 0, 0, -1, -1, 0, 0);
 	}
 	return true;
 }
@@ -61,7 +61,7 @@ bool PXD::saveFrames(int frameCount) {
 int PXD::video(int frameCount) {
 	// Disable if live from a previous occurance or snap
 	if (isStreaming) {
-		pxd_goUnLive();
+		pxd_goUnLive(1);
 		isStreaming = false;
 	}
 
@@ -134,7 +134,7 @@ int PXD::enable() {
 int PXD::disable() {
 	// Check if already opened
 	if (isOpen && isStreaming) {
-		pxd_goUnLive();
+		pxd_goUnLive(1);
 	}
 	isStreaming = false;
 }
