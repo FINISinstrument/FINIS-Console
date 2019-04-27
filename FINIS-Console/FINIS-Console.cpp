@@ -12,6 +12,8 @@
 #include "Shutter.h"
 // PIXCI header
 #include "XCLIB/xcliball.h"
+// PXD
+#include "PXD.h"
 
 // Vimba class
 #include "Vimba.h"
@@ -35,22 +37,33 @@ int main() {
 	*/
 
 	// Open the pxd opject
+	/*
 	std::cout << "Opening frame grabber...\n";
 	int openError = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup16Bit30Hz.fmt");
 	if (openError < 0) {
 		printf("error: %s\n", pxd_mesgErrorCode(openError));
 	}
 	Sleep(1000);
+	*/
+	PXD pxd = PXD("C:/FINIS/testing");
 	std::cout << "Opened frame grabber\n";
 
+	/*
 	// Go live
 	pxd_goLive(1, 1);
 	while (!pxd_goneLive(1,0)) { Sleep(0); }
 	std::cout << "Gone live\n";
+	*/
 
 	int cmd;
 	bool done = false;
 	while (!done) {
+		std::cout << "0: End Program\n";
+		std::cout << "1: Snap a photo\n";
+		std::cout << "2: Get real time LLA data\n";
+		std::cout << "3: Open shutter\n";
+		std::cout << "4: Close shutter\n";
+		std::cout << "5: Record stream\n";
 		std::cout << "Enter a cmd:";
 		std::cin >> cmd;
 
@@ -60,6 +73,7 @@ int main() {
 				break;
 			}
 			case 1: {// Snap a picture!
+				/*
 				pxd_goSnap(1, 1);
 				Sleep(50);
 				std::cout << "Snap picture\n";
@@ -70,6 +84,8 @@ int main() {
 				}
 				Sleep(100);
 				std::cout << "\nSave image\n";
+				*/
+				pxd.snap("snapper");
 
 
 				break;
@@ -82,16 +98,15 @@ int main() {
 				shutter.closeShutter();
 				break;
 			}
+			case 5: {
+				pxd.video(300);
+				break;
+			}
 			case 2: { //GET data from IMU (nonAsync) //TODO: make this Asynchronous
 				//imu.getNonAsyncData();
 			}
 			default: { //print out all the options for keystrokes
 				std::cout << "Not a valid argument type\n";
-				std::cout << "0: End Program\n";
-				std::cout << "1: Snap a photo\n";
-				std::cout << "2: Get real time LLA data\n";
-				std::cout << "3: Open shutter\n";
-				std::cout << "4: Close shutter\n";
 
 				break;
 			}
@@ -101,7 +116,7 @@ int main() {
 		//imu.~IMU();
 	} // End while
 	// Close the pxd object
-	pxd_PIXCIclose();
+	//pxd_PIXCIclose();
 	std::cout << "Hello World!\n";
 
 }
