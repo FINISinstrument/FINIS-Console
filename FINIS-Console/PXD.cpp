@@ -28,7 +28,7 @@ PXD::PXD(std::string saveLocation, bool isThirtyFPS) {
 
 PXD::~PXD() {
 	if (isOpen) {
-		pxd_PIXCIclose(1);
+		pxd_PIXCIclose();
 	}
 }
 
@@ -39,7 +39,7 @@ int PXD::snap(std::string imageName) {
 	pxd_goSnap(1, 1);
 	// Change sleep method?
 	Sleep(50);
-	int saveTiffError = pxd_saveTif(1, folderPath + "/" + dateTime + "/" + imageName);
+	int saveTiffError = pxd_saveTiff(1, folderPath + "/" + dateTime + "/" + imageName);
 	if (saveTiffError < 0) {
 		printf("Error saving image: %s\n", pxd_mesgErrorCode(saveTiffError));
 	}
@@ -108,7 +108,7 @@ int PXD::openPXD() {
 
 void PXD::getDateTime() {
 	std::time_t t = std::time(0);
-	std::tm* now = std::localtime(&t);
+	std::tm* now = std::localtime_s(&t);
 
 	dateTime = (now->tm_year + 1900) + '-' + (now->tm_mon + 1) + '-' + now->tm_mday;
 }
