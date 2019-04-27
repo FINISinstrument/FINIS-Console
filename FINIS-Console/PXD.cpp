@@ -39,10 +39,11 @@ int PXD::snap(std::string imageName) {
 	pxd_goSnap(1, 1);
 	// Change sleep method?
 	Sleep(50);
-	int saveTiffError = pxd_saveTiff(1, folderPath + "/" + dateTime + "/" + imageName);
+	int saveTiffError = pxd_saveTiff(1, (folderPath + "/" + dateTime + "/" + imageName + ".tiff").c_str(), 1, 0,0, -1,-1, 0,0);
 	if (saveTiffError < 0) {
 		printf("Error saving image: %s\n", pxd_mesgErrorCode(saveTiffError));
 	}
+	return 1;
 }
 
 bool PXD::recordFrames(int frameCount) {
@@ -53,7 +54,7 @@ bool PXD::recordFrames(int frameCount) {
 }
 bool PXD::saveFrames(int frameCount) {
 	for (int i = 0; i < frameCount; i++) {
-		pxd_saveTiff(1, (folderPath + "/" + dateTime + "/" + std::to_string(i) + ".tif").c_str(), i, 0, 0, -1, -1, 0, 0);
+		pxd_saveTiff(1, (folderPath + "/" + dateTime + "/" + std::to_string(i) + ".tiff").c_str(), i, 0, 0, -1, -1, 0, 0);
 	}
 	return true;
 }
@@ -108,9 +109,12 @@ int PXD::openPXD() {
 
 void PXD::getDateTime() {
 	std::time_t t = std::time(0);
+	/*
 	std::tm* now = std::localtime_s(&t);
 
 	dateTime = (now->tm_year + 1900) + '-' + (now->tm_mon + 1) + '-' + now->tm_mday;
+	*/
+	dateTime = std::to_string(t).c_str();
 }
 
 int PXD::enable() {
@@ -129,6 +133,7 @@ int PXD::enable() {
 		while (!pxd_goneLive(1, 0)) { Sleep(0); }
 		isStreaming = true;
 	}
+	return 0;
 }
 
 int PXD::disable() {
@@ -137,4 +142,5 @@ int PXD::disable() {
 		pxd_goUnLive(1);
 	}
 	isStreaming = false;
+	return 0;
 }
