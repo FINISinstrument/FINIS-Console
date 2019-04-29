@@ -1,6 +1,7 @@
 #include <iostream>
 #include <windows.h>
 #include <time.h>
+#include <ctime>
 #include "PXD.h"
 
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
@@ -109,12 +110,8 @@ int PXD::openPXD() {
 
 void PXD::getDateTime() {
 	std::time_t t = std::time(0);
-	/*
-	std::tm* now = std::localtime_s(&t);
-
-	dateTime = (now->tm_year + 1900) + '-' + (now->tm_mon + 1) + '-' + now->tm_mday;
-	*/
-	dateTime = std::to_string(t).c_str();
+	
+	dateTime = ctime(&t);
 }
 
 int PXD::enable() {
