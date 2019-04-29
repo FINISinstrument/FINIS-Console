@@ -2,6 +2,8 @@
 #include <windows.h>
 #include <time.h>
 #include <ctime>
+#include <algorithm>
+#include <chrono>
 #include "PXD.h"
 
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
@@ -72,9 +74,14 @@ int PXD::video(int frameCount) {
 	folderPath = baseVideoPath + dateTime;
 	// Create directory
 	CreateDirectoryA(folderPath.c_str(), NULL);
+	std::cout << GetLastError() << "\n";
 	
+	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 	// Record frames
 	recordFrames(frameCount % 400);
+	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+	std::cout << "Record took " << duration << " microseconds to capture " << frameCount << " frames\n";
 
 	// Save images
 	saveFrames(frameCount % 400);
@@ -118,6 +125,7 @@ void PXD::getDateTime() {
 	std::time_t t = std::time(0);
 	
 	// Convert to string
+	// Ignoring CRT_SECURE_NO_WARNINGS
 	dateTime = ctime(&t);
 
 	// Sanitize string
@@ -127,6 +135,7 @@ void PXD::getDateTime() {
 		if (*it == ':')
 			*it = '-';
 	}
+	dateTime.erase(std::remove(dateTime.begin(), dateTime.end(), '\n'), dateTime.end());
 }
 
 int PXD::enable() {

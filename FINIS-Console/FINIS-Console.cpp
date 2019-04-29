@@ -8,6 +8,9 @@
 
 #include <windows.h>
 
+// For profiling
+#include <chrono>
+
 // Shutter header
 #include "Shutter.h"
 // PIXCI header
@@ -88,6 +91,7 @@ int main() {
 			}
 			case 5: {
 				pxd.video(300);
+				
 				break;
 			}
 			case 2: { //GET data from IMU (nonAsync) //TODO: make this Asynchronous
