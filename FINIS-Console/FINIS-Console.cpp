@@ -73,18 +73,6 @@ int main() {
 				break;
 			}
 			case 1: {// Snap a picture!
-				/*
-				pxd_goSnap(1, 1);
-				Sleep(50);
-				std::cout << "Snap picture\n";
-				// save image
-				int saveTiffError = pxd_saveTiff(1, "C:/Users/FINIS/Desktop/image.tiff", 1, 0, 0, -1, -1, 0, 0);
-				if (saveTiffError < 0) {
-					printf("error: %s\n", pxd_mesgErrorCode(saveTiffError));
-				}
-				Sleep(100);
-				std::cout << "\nSave image\n";
-				*/
 				pxd.snap("snapper");
 
 

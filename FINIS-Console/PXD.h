@@ -39,4 +39,7 @@ class PXD {
 		int loopCount;
 		int folderIndex;
 		std::string folderPath;
+
+		std::string baseImagePath = "C:/FINIS/testing/Image/";
+		std::string baseVideoPath = "C:/FINIS/testing/Video/";
 };

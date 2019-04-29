@@ -40,7 +40,7 @@ int PXD::snap(std::string imageName) {
 	pxd_goSnap(1, 1);
 	// Change sleep method?
 	Sleep(50);
-	int saveTiffError = pxd_saveTiff(1, (folderPath + "/" + dateTime + "/" + imageName + ".tiff").c_str(), 1, 0,0, -1,-1, 0,0);
+	int saveTiffError = pxd_saveTiff(1, (folderPath + "/" + imageName + ".tiff").c_str(), 1, 0,0, -1,-1, 0,0);
 	if (saveTiffError < 0) {
 		printf("Error saving image: %s\n", pxd_mesgErrorCode(saveTiffError));
 	}
@@ -55,7 +55,7 @@ bool PXD::recordFrames(int frameCount) {
 }
 bool PXD::saveFrames(int frameCount) {
 	for (int i = 0; i < frameCount; i++) {
-		pxd_saveTiff(1, (folderPath + "/" + dateTime + "/" + std::to_string(i) + ".tiff").c_str(), i, 0, 0, -1, -1, 0, 0);
+		pxd_saveTiff(1, (folderPath + "/" + std::to_string(i) + ".tiff").c_str(), i, 0, 0, -1, -1, 0, 0);
 	}
 	return true;
 }
@@ -67,6 +67,12 @@ int PXD::video(int frameCount) {
 		isStreaming = false;
 	}
 
+	// Get directory to save images to
+	getDateTime();
+	folderPath = baseVideoPath + dateTime;
+	// Create directory
+	CreateDirectoryA(folderPath.c_str(), NULL);
+	
 	// Record frames
 	recordFrames(frameCount % 400);
 
@@ -111,7 +117,16 @@ int PXD::openPXD() {
 void PXD::getDateTime() {
 	std::time_t t = std::time(0);
 	
+	// Convert to string
 	dateTime = ctime(&t);
+
+	// Sanitize string
+	for (std::string::iterator it = dateTime.begin(); it != dateTime.end(); ++it) {
+		if (*it == ' ')
+			*it = '_';
+		if (*it == ':')
+			*it = '-';
+	}
 }
 
 int PXD::enable() {
