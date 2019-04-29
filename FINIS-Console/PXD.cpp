@@ -50,9 +50,13 @@ int PXD::snap(std::string imageName) {
 }
 
 bool PXD::recordFrames(int frameCount) {
+	// Use futures to wait for return from call
 	// Take images
-	pxd_goLiveSeq(1, 1, 401, 1, frameCount, 1);
-	while (pxd_goneLive(1, 0)) { Sleep(0); }
+	std::packaged_task<int()> task(pxd_goLiveSeq(1, 1, 401, 1, frameCount, 1));
+	std::future<int> f1 = task.get_future();
+	f1.wait();
+	std::cout << "Output from future: " << f1.get() << "\n";
+	//while (pxd_goneLive(1, 0)) { Sleep(0); }
 	return true;
 }
 bool PXD::saveFrames(int frameCount) {

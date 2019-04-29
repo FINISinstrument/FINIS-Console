@@ -2,6 +2,8 @@
 
 #include <string>
 #include <ctime> // Used for getting dateTime
+#include <future>
+#include <thread>
 #include "XCLIB/xcliball.h"
 
 class PXD {
