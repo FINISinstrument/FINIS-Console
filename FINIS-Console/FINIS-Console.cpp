@@ -90,7 +90,10 @@ int main() {
 				break;
 			}
 			case 5: {
-				pxd.video(300);
+				std::cout << "Enter frame count (max 400: ";
+				int frameCount;
+				std::cin >> frameCount;
+				pxd.video(frameCount);
 				
 				break;
 			}

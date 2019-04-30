@@ -52,11 +52,13 @@ int PXD::snap(std::string imageName) {
 bool PXD::recordFrames(int frameCount) {
 	// Use futures to wait for return from call
 	// Take images
-	std::packaged_task<int()> task(pxd_goLiveSeq(1, 1, 401, 1, frameCount, 1));
-	std::future<int> f1 = task.get_future();
-	f1.wait();
-	std::cout << "Output from future: " << f1.get() << "\n";
-	//while (pxd_goneLive(1, 0)) { Sleep(0); }
+	//std::future<int> task = std::async(pxd_goLiveSeq, 1, 1, 401, 1, frameCount, 1);
+	//int a = task.get();
+	//std::cout << "Output from future: " << a << "\n";
+	//std::cout << "Error: " << pxd_mesgErrorCode(a) << "\n";
+	
+	pxd_goLiveSeq(1, 1, frameCount + 1, 1, frameCount, 1);
+	while (pxd_goneLive(1, 0)) { Sleep(0); }
 	return true;
 }
 bool PXD::saveFrames(int frameCount) {
@@ -112,15 +114,19 @@ int PXD::openPXD() {
 	int error;
 	if (isThirtyFPS && isSixteenBit) {
 		error = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup16Bit30Hz.fmt");
+		std::cout << "30 FPS, 16 Bit\n";
 	}
 	else if(isThirtyFPS && !isSixteenBit) {
 		error = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup14Bit30Hz.fmt");
+		std::cout << "30 FPS, 14 Bit\n";
 	}
 	else if(!isThirtyFPS && isSixteenBit) {
 		error = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup16Bit15Hz.fmt");
+		std::cout << "15 FPS, 16 Bit\n";
 	}
 	else {
 		error = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup14Bit15Hz.fmt");
+		std::cout << "15 FPS, 14 Bit\n";
 	}
 	return error;
 }
