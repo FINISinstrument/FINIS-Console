@@ -48,7 +48,7 @@ int main() {
 	}
 	Sleep(1000);
 	*/
-	PXD pxd = PXD("C:/FINIS/testing");
+	PXD pxd ("C:/FINIS/testing");
 	std::cout << "Opened frame grabber\n";
 
 	/*

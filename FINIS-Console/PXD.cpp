@@ -71,7 +71,7 @@ bool PXD::recordFrames(int frameCount, int offset, int videoPeriod) {
 	pxd_goLiveSeq(1, 1, frameCount + 1, 1, frameCount, 1);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
 	while (pxd_goneLive(1, 0)) {
-		time = pxd_bufferSysTicks(1, 0);
+		time = pxd_buffersSysTicks(1, i);
 		if (time > frameTimestamps[i]) {
 			frameTimestamps[i++] = time;
 		}
