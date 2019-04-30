@@ -22,6 +22,9 @@ PXD::PXD(std::string saveLocation, bool isThirtyFPS) {
 
 	this->halfBufferSize = 200;
 
+	// Initialize buffer for recording system time of frames
+	frameTimestamps = new uint32_t[this->halfBufferSize * 2];
+
 	int openError = openPXD();
 	if (openError < 0) {
 		printf("error: %s\n", pxd_mesgErrorCode(openError));
@@ -33,6 +36,11 @@ PXD::~PXD() {
 	if (isOpen) {
 		pxd_PIXCIclose();
 	}
+
+	if (frameTimestamps != nullptr) {
+		delete frameTimestamps;
+		frameTimestamps = nullptr;
+	}
 }
 
 int PXD::snap(std::string imageName) {
@@ -42,14 +50,14 @@ int PXD::snap(std::string imageName) {
 	pxd_goSnap(1, 1);
 	// Change sleep method?
 	Sleep(50);
-	int saveTiffError = pxd_saveTiff(1, (folderPath + "/" + imageName + ".tiff").c_str(), 1, 0,0, -1,-1, 0,0);
+	int saveTiffError = pxd_saveTiff(1, (baseImagePath + imageName + ".tiff").c_str(), 1, 0,0, -1,-1, 0,0);
 	if (saveTiffError < 0) {
 		printf("Error saving image: %s\n", pxd_mesgErrorCode(saveTiffError));
 	}
 	return 1;
 }
 
-bool PXD::recordFrames(int frameCount) {
+bool PXD::recordFrames(int frameCount, int offset, int videoPeriod) {
 	// Use futures to wait for return from call
 	// Take images
 	//std::future<int> task = std::async(pxd_goLiveSeq, 1, 1, 401, 1, frameCount, 1);
@@ -57,11 +65,21 @@ bool PXD::recordFrames(int frameCount) {
 	//std::cout << "Output from future: " << a << "\n";
 	//std::cout << "Error: " << pxd_mesgErrorCode(a) << "\n";
 	
+	int i = 0;
+	uint32_t time;
+
 	pxd_goLiveSeq(1, 1, frameCount + 1, 1, frameCount, 1);
-	while (pxd_goneLive(1, 0)) { Sleep(0); }
+	//while (pxd_goneLive(1, 0)) { Sleep(0); }
+	while (pxd_goneLive(1, 0)) {
+		time = pxd_bufferSysTicks(1, 0);
+		if (time > frameTimestamps[i]) {
+			frameTimestamps[i++] = time;
+		}
+	}
+	
 	return true;
 }
-bool PXD::saveFrames(int frameCount) {
+bool PXD::saveFrames(int frameCount, int offset, int videoPeriod) {
 	for (int i = 0; i < frameCount; i++) {
 		pxd_saveTiff(1, (folderPath + "/" + std::to_string(i) + ".tiff").c_str(), i, 0, 0, -1, -1, 0, 0);
 	}
@@ -75,6 +93,14 @@ int PXD::video(int frameCount) {
 		isStreaming = false;
 	}
 
+	// Reset finished flag
+	finishedWithVideo = false;
+
+	// Clear buffer of timestamps
+	for (int i = 0; i < this->halfBufferSize * 2; i++) {
+		frameTimestamps[i] = 0;
+	}
+
 	// Get directory to save images to
 	getDateTime();
 	folderPath = baseVideoPath + dateTime;
@@ -84,13 +110,18 @@ int PXD::video(int frameCount) {
 	
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 	// Record frames
-	recordFrames(frameCount % 400);
+	recordFrames(frameCount % 400,0,1);
 	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 	std::cout << "Record took " << duration << " microseconds to capture " << frameCount << " frames\n";
 
+	std::cout << "Outputing times from buffer:\n";
+	for (int i = 0; i < frameCount; i++) {
+		std::cout << "Frame " << i << ": " << frameTimestamps[i] << "\n";
+	}
+
 	// Save images
-	saveFrames(frameCount % 400);
+	saveFrames(frameCount % 400,0,1);
 
 
 	return 0;

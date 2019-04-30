@@ -4,6 +4,7 @@
 #include <ctime> // Used for getting dateTime
 #include <future>
 #include <thread>
+#include <atomic>
 #include "XCLIB/xcliball.h"
 
 class PXD {
@@ -20,8 +21,8 @@ class PXD {
 
 		void getDateTime();
 
-		bool recordFrames(int frameCount);
-		bool saveFrames(int frameCount);
+		bool recordFrames(int frameCount, int offset, int videoPeriod);
+		bool saveFrames(int frameCount, int offset, int videoPeriod);
 
 		int enable();
 		int disable();
@@ -42,6 +43,11 @@ class PXD {
 		int folderIndex;
 		std::string folderPath;
 
+		std::atomic<bool> finishedWithVideo;
+
 		std::string baseImagePath = "C:/FINIS/testing/Image/";
 		std::string baseVideoPath = "C:/FINIS/testing/Video/";
+
+		// Frame buffer information
+		uint32_t* frameTimestamps;
 };
