@@ -21,8 +21,8 @@ class PXD {
 
 		void getDateTime();
 
-		bool recordFrames(int frameCount, int offset, int videoPeriod);
-		bool saveFrames(int frameCount, int offset, int videoPeriod);
+		static void recordFrames(int frameCount, int videoPeriod);
+		static void saveFrames(int frameCount, int videoPeriod);
 
 		int enable();
 		int disable();
@@ -38,16 +38,18 @@ class PXD {
 		int frameCountRemainder;
 		int imagesCaptured;
 
-		int halfBufferSize;
+		static int halfBufferSize;
 		int loopCount;
-		int folderIndex;
-		std::string folderPath;
+		static std::string folderPath;
 
 		std::atomic<bool> finishedWithVideo;
+
+		// Semaphore information
+		static HANDLE ghSemaphore;
 
 		std::string baseImagePath = "C:/FINIS/testing/Image/";
 		std::string baseVideoPath = "C:/FINIS/testing/Video/";
 
 		// Frame buffer information
-		uint32_t* frameTimestamps;
+		static uint32_t* frameTimestamps;
 };

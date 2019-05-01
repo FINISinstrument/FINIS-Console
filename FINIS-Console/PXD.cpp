@@ -3,6 +3,7 @@
 #include <time.h>
 #include <ctime>
 #include <algorithm>
+#include <thread>
 #include <chrono>
 #include "PXD.h"
 
@@ -57,33 +58,55 @@ int PXD::snap(std::string imageName) {
 	return 1;
 }
 
-bool PXD::recordFrames(int frameCount, int offset, int videoPeriod) {
-	// Use futures to wait for return from call
-	// Take images
-	//std::future<int> task = std::async(pxd_goLiveSeq, 1, 1, 401, 1, frameCount, 1);
-	//int a = task.get();
-	//std::cout << "Output from future: " << a << "\n";
-	//std::cout << "Error: " << pxd_mesgErrorCode(a) << "\n";
-	
+void PXD::recordFrames(int frameCount, int videoPeriod) {
 	int i = 0;
 	uint32_t time;
+	bool first = true;
 
-	pxd_goLiveSeq(1, 1, frameCount + 1, 1, frameCount, 1);
+	pxd_goLiveSeq(1, 0, 400, 1, 0, videoPeriod);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
 	while (pxd_goneLive(1, 0)) {
+		// Put timestamp into buffer
 		time = pxd_buffersSysTicks(1, i);
 		if (time > frameTimestamps[i]) {
 			frameTimestamps[i++] = time;
+		}
+		if (i % halfBufferSize == 0) {
+			if (first) {
+				first = false;
+			}
+			else {
+				ReleaseSemaphore(ghSemaphore, 1, NULL);
+			}
 		}
 	}
 	
 	return true;
 }
-bool PXD::saveFrames(int frameCount, int offset, int videoPeriod) {
+void PXD::saveFrames(int frameCount, int videoPeriod) {
+	int remainingFrames = frameCount;
+
+	// Loop until we have hit frameCount
 	for (int i = 0; i < frameCount; i++) {
-		pxd_saveTiff(1, (folderPath + "/" + std::to_string(i) + ".tiff").c_str(), i, 0, 0, -1, -1, 0, 0);
+		// Wait for semaphore
+		WaitForSingleObject(ghSemaphore, INFINITE);
+		// Loop through first part of buffer
+		for (int j = 0; j < halfBufferSize && j < remainingFrames; j++) {
+			pxd_saveTiff(1, (folderPath + "/" + std::to_string(i * 400 + j) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
+		}
+		remainingFrames -= halfBufferSize;
+		
+		// Check if not finished
+		if (remainingFrames > 0) {
+			// Wait for semaphore
+			WaitForSingleObject(ghSemaphore, INFINITE);
+			// Loop through second part of buffer
+			for (int j = 0; j < halfBufferSize && j < remainingFrames; j++) {
+				pxd_saveTiff(1, (folderPath + "/" + std::to_string(i * 400 + halfBufferSize + j) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
+			}
+			remainingFrames -= halfBufferSize;
+		}
 	}
-	return true;
 }
 
 int PXD::video(int frameCount) {
@@ -108,37 +131,37 @@ int PXD::video(int frameCount) {
 	CreateDirectoryA(folderPath.c_str(), NULL);
 	std::cout << GetLastError() << "\n";
 	
+	// Create semaphore object for syncronizing saving
+	ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
+
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-	// Record frames
-	recordFrames(frameCount % 400,0,1);
+
+	// Spawn thread to record frames
+	std::thread recordThread(recordFrames, frameCount, 1);
 	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+
+	// Save images, wait for record to finish
+	std::thread saveThread(saveFrames, frameCount, 1);
+	recordThread.join();
+
+	// Getting time to record frames
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 	std::cout << "Record took " << duration << " microseconds to capture " << frameCount << " frames\n";
 
+	// Wait for save to finish
+	saveThread.join();
+
+	/*
 	std::cout << "Outputing times from buffer:\n";
-	for (int i = 0; i < frameCount; i++) {
+	for (int i = 0; i < halfBufferSize * 2; i++) {
 		std::cout << "Frame " << i << ": " << frameTimestamps[i] << "\n";
 	}
+	*/
 
-	// Save images
-	saveFrames(frameCount % 400,0,1);
-
+	// Close semaphore
+	CloseHandle(ghSemaphore);
 
 	return 0;
-	/*
-	// TODO: Finish reimplementing more than 400 frames. For testing purposes, max capture of 400
-	// Start recording
-	int offset;
-	for (int i = 0; i < frameCount / halfBufferSize; i++) {
-		// Record in first half
-		if (i % 2 == 0) {
-			pxd_goLiveSeq(1, 1, 1 + (i % 2)*halfBufferSize, 1, halfBufferSize, 1);
-		}
-		else {
-			pxd_goLiveSeq(1, 1, 1 + (i % 2)*halfBufferSize, 1, halfBufferSize, 1);
-		}
-	}
-	*/
 }
 
 int PXD::openPXD() {
