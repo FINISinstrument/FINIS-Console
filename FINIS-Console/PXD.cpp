@@ -58,19 +58,20 @@ int PXD::snap(std::string imageName) {
 	return 1;
 }
 
-void PXD::recordFrames(int frameCount, int videoPeriod) {
+void PXD::recordFrames(int videoPeriod) {
 	int i = 0;
 	uint32_t time;
 	bool first = true;
 
 	pxd_goLiveSeq(1, 0, 400, 1, 0, videoPeriod);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
-	while (pxd_goneLive(1, 0)) {
+	while (pxd_goneLive(1, 0) && !finishedWithVideo) {
 		// Put timestamp into buffer
 		time = pxd_buffersSysTicks(1, i);
 		if (time > frameTimestamps[i]) {
 			frameTimestamps[i++] = time;
 		}
+		// Check if we should start the next save cycle
 		if (i % halfBufferSize == 0) {
 			if (first) {
 				first = false;
@@ -80,32 +81,56 @@ void PXD::recordFrames(int frameCount, int videoPeriod) {
 			}
 		}
 	}
+	pxd_goUnlive();
 	
 	return true;
 }
-void PXD::saveFrames(int frameCount, int videoPeriod) {
-	int remainingFrames = frameCount;
 
-	// Loop until we have hit frameCount
-	for (int i = 0; i < frameCount; i++) {
-		// Wait for semaphore
-		WaitForSingleObject(ghSemaphore, INFINITE);
-		// Loop through first part of buffer
-		for (int j = 0; j < halfBufferSize && j < remainingFrames; j++) {
-			pxd_saveTiff(1, (folderPath + "/" + std::to_string(i * 400 + j) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
-		}
-		remainingFrames -= halfBufferSize;
-		
-		// Check if not finished
-		if (remainingFrames > 0) {
+void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
+	if (!secondsCount) { // Based off of frames
+		int frameCount = 0;
+		int firstHalf = 1;
+
+		// Loop until we have hit frameCount
+		while (frameCount < count) {
+			firstHalf = 1 - firstHalf;
 			// Wait for semaphore
 			WaitForSingleObject(ghSemaphore, INFINITE);
-			// Loop through second part of buffer
-			for (int j = 0; j < halfBufferSize && j < remainingFrames; j++) {
-				pxd_saveTiff(1, (folderPath + "/" + std::to_string(i * 400 + halfBufferSize + j) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
+
+			// Save frames
+			for (int i = 0; i < halfBufferSize; i++) {
+				pxd_saveTiff(1, (folderPath + "/" + std::to_string(frameCount + firstHalf * 200 + i) + ".tiff").c_str(), (firstHalf*200) + i, 0, 0, -1, -1, 0, 0);
 			}
-			remainingFrames -= halfBufferSize;
+			// Update reference count
+			frameCount += halfBufferSize;
 		}
+		// Should be done recording
+		finishedWithVideo = true;
+	}
+	else { // Based off of time
+		int firstHalf = 1;
+		// Get start time
+		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+
+		// Loop until we have hit the max time
+		while (duration < count) {
+			firstHalf = 1 - firstHalf;
+			// Wait for semaphore
+			WaitForSingleObject(ghSemaphore, INFINITE);
+
+			// Save frames
+			for (int i = 0; i < halfBufferSize; i++) {
+				pxd_saveTiff(1, (folderPath + "/" + std::to_string(frameCount + firstHalf * 200 + i) + ".tiff").c_str(), (firstHalf*200) + i, 0, 0, -1, -1, 0, 0);
+			}
+			// Update reference time
+			t2 = std::chrono::high_resolution_clock::now();
+			duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+		}
+		// Should be done recording
+		finishedWithVideo = true;
 	}
 }
 
@@ -137,11 +162,12 @@ int PXD::video(int frameCount) {
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
 	// Spawn thread to record frames
-	std::thread recordThread(recordFrames, frameCount, 1);
+	std::thread recordThread(recordFrames, 1);
 	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
 	// Save images, wait for record to finish
-	std::thread saveThread(saveFrames, frameCount, 1);
+	//std::thread saveThread(saveFrames, frameCount, 1);
+	std::thread saveThread(saveFrames, 10, 1, true); // 10 seconds to save
 	recordThread.join();
 
 	// Getting time to record frames

@@ -21,8 +21,8 @@ class PXD {
 
 		void getDateTime();
 
-		static void recordFrames(int frameCount, int videoPeriod);
-		static void saveFrames(int frameCount, int videoPeriod);
+		static void recordFrames(int videoPeriod);
+		static void saveFrames(int count, int videoPeriod, bool secondsCount);
 
 		int enable();
 		int disable();
@@ -42,7 +42,7 @@ class PXD {
 		int loopCount;
 		static std::string folderPath;
 
-		std::atomic<bool> finishedWithVideo;
+		static std::atomic<bool> finishedWithVideo;
 
 		// Semaphore information
 		static HANDLE ghSemaphore;
