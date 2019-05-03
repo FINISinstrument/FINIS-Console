@@ -7,6 +7,14 @@
 #include <chrono>
 #include "PXD.h"
 
+// Static member variables defined
+int PXD::halfBufferSize = 200;
+std::string PXD::folderPath = "C:/Users/FINIS/Desktop/";
+uint32_t* PXD::frameTimestamps = new uint32_t[PXD::halfBufferSize * 2];
+std::atomic<bool> PXD::finishedWithVideo = false;
+bool PXD::firstHandleRun = true;
+HANDLE PXD::ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
+
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
 {
 
@@ -19,12 +27,10 @@ PXD::PXD(std::string saveLocation, bool isThirtyFPS) {
 	this->isStreaming = false;
 	this->isOpen = false;
 
-	this->folderPath = saveLocation;
-
-	this->halfBufferSize = 200;
+	//folderPath = saveLocation;
 
 	// Initialize buffer for recording system time of frames
-	frameTimestamps = new uint32_t[this->halfBufferSize * 2];
+	//frameTimestamps = new uint32_t[this->halfBufferSize * 2];
 
 	int openError = openPXD();
 	if (openError < 0) {
@@ -81,9 +87,7 @@ void PXD::recordFrames(int videoPeriod) {
 			}
 		}
 	}
-	pxd_goUnlive();
-	
-	return true;
+	pxd_goUnLive(1);
 }
 
 void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
@@ -109,6 +113,8 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 	}
 	else { // Based off of time
 		int firstHalf = 1;
+		int frameCount = 0;
+
 		// Get start time
 		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
@@ -128,6 +134,7 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 			// Update reference time
 			t2 = std::chrono::high_resolution_clock::now();
 			duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+			frameCount += halfBufferSize;
 		}
 		// Should be done recording
 		finishedWithVideo = true;
@@ -157,6 +164,9 @@ int PXD::video(int frameCount) {
 	std::cout << GetLastError() << "\n";
 	
 	// Create semaphore object for syncronizing saving
+	if (firstHandleRun) {
+		CloseHandle(ghSemaphore);
+	}
 	ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
 
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();

@@ -52,4 +52,6 @@ class PXD {
 
 		// Frame buffer information
 		static uint32_t* frameTimestamps;
+
+		static bool firstHandleRun;
 };
