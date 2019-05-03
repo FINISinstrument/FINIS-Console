@@ -166,6 +166,7 @@ int PXD::video(int frameCount) {
 	// Create semaphore object for syncronizing saving
 	if (firstHandleRun) {
 		CloseHandle(ghSemaphore);
+		firstHandleRun = false;
 	}
 	ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
 
