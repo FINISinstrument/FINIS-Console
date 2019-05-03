@@ -10,6 +10,8 @@ class Vimba {
 		~Vimba();
 
 		bool startCamera();
+
+		void updateExposure(double exposureTime);
 	private:
 		AVT::VmbAPI::VimbaSystem &sys;
 		AVT::VmbAPI::CameraPtrVector cameras;

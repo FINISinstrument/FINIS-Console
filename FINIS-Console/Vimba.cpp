@@ -54,3 +54,12 @@ bool Vimba::startCamera() {
 
 	return true;
 }
+
+void Vimba::updateExposure(double exposure) {
+	//camera->GetFeatureByName("AcquisitionStop", feature);
+	//feature->RunCommand();
+	camera->GetFeatureByName("ExposureTime", feature);
+	feature->SetValue(exposure);
+	//camera->GetFeatureByName("AcquisitionStart", feature);
+	//feature->RunCommand();
+}
