@@ -27,11 +27,6 @@ PXD::PXD(std::string saveLocation, bool isThirtyFPS) {
 	this->isStreaming = false;
 	this->isOpen = false;
 
-	//folderPath = saveLocation;
-
-	// Initialize buffer for recording system time of frames
-	//frameTimestamps = new uint32_t[this->halfBufferSize * 2];
-
 	int openError = openPXD();
 	if (openError < 0) {
 		printf("error: %s\n", pxd_mesgErrorCode(openError));
