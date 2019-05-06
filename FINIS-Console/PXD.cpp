@@ -69,9 +69,9 @@ void PXD::recordFrames(int videoPeriod) {
 	uint32_t time;
 	bool first = true;
 
-	pxd_goLiveSeq(1, 0, 400, 1, 0, videoPeriod);
+	pxd_goLiveSeq(1, 1, 400, 1, 0, videoPeriod);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
-	while (pxd_goneLive(1, 0) && !finishedWithVideo) {
+	while (!finishedWithVideo || i % 200 != 0) {
 		// Put timestamp into buffer
 		time = pxd_buffersSysTicks(1, i);
 		if (time > frameTimestamps[i]) {
@@ -87,58 +87,37 @@ void PXD::recordFrames(int videoPeriod) {
 			}
 		}
 	}
+	ReleaseSemaphore(ghSemaphore, 1, NULL);
 	pxd_goUnLive(1);
 }
 
 void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
-	if (!secondsCount) { // Based off of frames
-		int frameCount = 0;
-		int firstHalf = 1;
+	int frameCount = 0;
+	int firstHalf = 1;
 
-		// Loop until we have hit frameCount
-		while (frameCount < count) {
-			firstHalf = 1 - firstHalf;
-			// Wait for semaphore
-			WaitForSingleObject(ghSemaphore, INFINITE);
+	// Get start time
+	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
-			// Save frames
-			for (int i = 0; i < halfBufferSize; i++) {
-				pxd_saveTiff(1, (folderPath + "/" + std::to_string(frameCount + firstHalf * 200 + i) + ".tiff").c_str(), (firstHalf*200) + i, 0, 0, -1, -1, 0, 0);
-			}
-			// Update reference count
-			frameCount += halfBufferSize;
+	// Loop until we have hit frameCount
+	while ((frameCount < count && !secondsCount) || (duration < count && secondsCount)) {
+		firstHalf = 1 - firstHalf;
+		// Wait for semaphore
+		WaitForSingleObject(ghSemaphore, INFINITE);
+
+		// Save frames
+		for (int i = 0; i < halfBufferSize; i++) {
+			pxd_saveTiff(1, (folderPath + "/" + std::to_string(frameCount + i) + ".tiff").c_str(), (firstHalf * 200) + i, 0, 0, -1, -1, 0, 0);
 		}
-		// Should be done recording
-		finishedWithVideo = true;
+		// Update reference metrics
+		t2 = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+		frameCount += halfBufferSize;
 	}
-	else { // Based off of time
-		int firstHalf = 1;
-		int frameCount = 0;
-
-		// Get start time
-		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-
-		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-
-		// Loop until we have hit the max time
-		while (duration < count) {
-			firstHalf = 1 - firstHalf;
-			// Wait for semaphore
-			WaitForSingleObject(ghSemaphore, INFINITE);
-
-			// Save frames
-			for (int i = 0; i < halfBufferSize; i++) {
-				pxd_saveTiff(1, (folderPath + "/" + std::to_string(frameCount + firstHalf * 200 + i) + ".tiff").c_str(), (firstHalf*200) + i, 0, 0, -1, -1, 0, 0);
-			}
-			// Update reference time
-			t2 = std::chrono::high_resolution_clock::now();
-			duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-			frameCount += halfBufferSize;
-		}
-		// Should be done recording
-		finishedWithVideo = true;
-	}
+	// Should be done recording
+	finishedWithVideo = true;
+	std::cout << "frameCount: " << frameCount << "\n";
 }
 
 int PXD::video(int frameCount) {
@@ -169,6 +148,8 @@ int PXD::video(int frameCount) {
 		firstHandleRun = false;
 	}
 	ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
+	std::cout << "intital decrement\n";
+	WaitForSingleObject(ghSemaphore, INFINITE);
 
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
@@ -178,7 +159,8 @@ int PXD::video(int frameCount) {
 
 	// Save images, wait for record to finish
 	//std::thread saveThread(saveFrames, frameCount, 1);
-	std::thread saveThread(saveFrames, 10, 1, true); // 10 seconds to save
+	//std::thread saveThread(saveFrames, 10, 1, true); // 10 seconds to save
+	std::thread saveThread(saveFrames, frameCount, 1, false); // 10 seconds to save
 	recordThread.join();
 
 	// Getting time to record frames
