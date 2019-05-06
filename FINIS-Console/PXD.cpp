@@ -3,8 +3,17 @@
 #include <time.h>
 #include <ctime>
 #include <algorithm>
+#include <thread>
 #include <chrono>
 #include "PXD.h"
+
+// Static member variables defined
+int PXD::halfBufferSize = 200;
+std::string PXD::folderPath = "C:/Users/FINIS/Desktop/";
+uint32_t* PXD::frameTimestamps = new uint32_t[PXD::halfBufferSize * 2];
+std::atomic<bool> PXD::finishedWithVideo = false;
+bool PXD::firstHandleRun = true;
+HANDLE PXD::ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
 
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
 {
@@ -17,13 +26,6 @@ PXD::PXD(std::string saveLocation, bool isThirtyFPS) {
 	this->isSixteenBit = true;
 	this->isStreaming = false;
 	this->isOpen = false;
-
-	this->folderPath = saveLocation;
-
-	this->halfBufferSize = 200;
-
-	// Initialize buffer for recording system time of frames
-	frameTimestamps = new uint32_t[this->halfBufferSize * 2];
 
 	int openError = openPXD();
 	if (openError < 0) {
@@ -57,38 +59,65 @@ int PXD::snap(std::string imageName) {
 	return 1;
 }
 
-bool PXD::recordFrames(int frameCount, int offset, int videoPeriod) {
-	// Use futures to wait for return from call
-	// Take images
-	//std::future<int> task = std::async(pxd_goLiveSeq, 1, 1, 401, 1, frameCount, 1);
-	//int a = task.get();
-	//std::cout << "Output from future: " << a << "\n";
-	//std::cout << "Error: " << pxd_mesgErrorCode(a) << "\n";
-	
+void PXD::recordFrames(int videoPeriod) {
 	int i = 0;
 	uint32_t time;
+	bool first = true;
 
-	pxd_goLiveSeq(1, 1, frameCount + 1, 1, frameCount, 1);
+	pxd_goLiveSeq(1, 1, 400, 1, 0, videoPeriod);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
-	while (pxd_goneLive(1, 0)) {
+	while (!finishedWithVideo || i % 200 != 0) {
+		// Put timestamp into buffer
 		time = pxd_buffersSysTicks(1, i);
 		if (time > frameTimestamps[i]) {
 			frameTimestamps[i++] = time;
 		}
+		// Check if we should start the next save cycle
+		if (i % halfBufferSize == 0) {
+			if (first) {
+				first = false;
+			}
+			else {
+				ReleaseSemaphore(ghSemaphore, 1, NULL);
+			}
+		}
 	}
-	
-	return true;
+	ReleaseSemaphore(ghSemaphore, 1, NULL);
+	pxd_goUnLive(1);
 }
-bool PXD::saveFrames(int frameCount, int offset, int videoPeriod) {
-	for (int i = 0; i < frameCount; i++) {
-		pxd_saveTiff(1, (folderPath + "/" + std::to_string(i) + ".tiff").c_str(), i, 0, 0, -1, -1, 0, 0);
+
+void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
+	int frameCount = 0;
+	int firstHalf = 1;
+
+	// Get start time
+	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+
+	// Loop until we have hit frameCount
+	while ((frameCount < count && !secondsCount) || (duration < count && secondsCount)) {
+		firstHalf = 1 - firstHalf;
+		// Wait for semaphore
+		WaitForSingleObject(ghSemaphore, INFINITE);
+
+		// Save frames
+		for (int i = 0; i < halfBufferSize; i++) {
+			pxd_saveTiff(1, (folderPath + "/" + std::to_string(frameCount + i) + ".tiff").c_str(), (firstHalf * 200) + i, 0, 0, -1, -1, 0, 0);
+		}
+		// Update reference metrics
+		t2 = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+		frameCount += halfBufferSize;
 	}
-	return true;
+	// Should be done recording
+	finishedWithVideo = true;
+	std::cout << "frameCount: " << frameCount << "\n";
 }
 
 int PXD::video(int frameCount) {
 	// Disable if live from a previous occurance or snap
-  	if (isStreaming) {
+	if (isStreaming) {
 		pxd_goUnLive(1);
 		isStreaming = false;
 	}
@@ -108,37 +137,45 @@ int PXD::video(int frameCount) {
 	CreateDirectoryA(folderPath.c_str(), NULL);
 	std::cout << GetLastError() << "\n";
 	
+	// Create semaphore object for syncronizing saving
+	if (firstHandleRun) {
+		CloseHandle(ghSemaphore);
+		firstHandleRun = false;
+	}
+	ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
+	std::cout << "intital decrement\n";
+	WaitForSingleObject(ghSemaphore, INFINITE);
+
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-	// Record frames
-	recordFrames(frameCount % 400,0,1);
+
+	// Spawn thread to record frames
+	std::thread recordThread(recordFrames, 1);
 	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+
+	// Save images, wait for record to finish
+	//std::thread saveThread(saveFrames, frameCount, 1);
+	//std::thread saveThread(saveFrames, 10, 1, true); // 10 seconds to save
+	std::thread saveThread(saveFrames, frameCount, 1, false); // 10 seconds to save
+	recordThread.join();
+
+	// Getting time to record frames
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 	std::cout << "Record took " << duration << " microseconds to capture " << frameCount << " frames\n";
 
+	// Wait for save to finish
+	saveThread.join();
+
+	/*
 	std::cout << "Outputing times from buffer:\n";
-	for (int i = 0; i < frameCount; i++) {
+	for (int i = 0; i < halfBufferSize * 2; i++) {
 		std::cout << "Frame " << i << ": " << frameTimestamps[i] << "\n";
 	}
+	*/
 
-	// Save images
-	saveFrames(frameCount % 400,0,1);
-
+	// Close semaphore
+	CloseHandle(ghSemaphore);
 
 	return 0;
-	/*
-	// TODO: Finish reimplementing more than 400 frames. For testing purposes, max capture of 400
-	// Start recording
-	int offset;
-	for (int i = 0; i < frameCount / halfBufferSize; i++) {
-		// Record in first half
-		if (i % 2 == 0) {
-			pxd_goLiveSeq(1, 1, 1 + (i % 2)*halfBufferSize, 1, halfBufferSize, 1);
-		}
-		else {
-			pxd_goLiveSeq(1, 1, 1 + (i % 2)*halfBufferSize, 1, halfBufferSize, 1);
-		}
-	}
-	*/
 }
 
 int PXD::openPXD() {
