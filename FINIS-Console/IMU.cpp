@@ -30,7 +30,7 @@ IMU::~IMU() {
 
 bool IMU::ConnectIMU() { //returns true if the sensor succesfully connects
 	vs.connect(m_sensorPort, m_sensorBaudeRate);
-	if (vs.isConnected()) {
+	if (vs.isConnected ()) {
 		std::cout << "IMU successfully connected on " << m_sensorPort << " With Baudrate: " << m_sensorBaudeRate << std::endl;
 		return true;
 	}
