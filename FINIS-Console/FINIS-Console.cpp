@@ -1,4 +1,4 @@
-// FINIS-Console.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// FINIS-Console.cpp : This file contains the 'main' function. Program execution begins and ends here.
 
 #include "pch.h"
 #include <iostream>
@@ -34,28 +34,15 @@ int main() {
 	//Initial Set up for the IMU
 	uint32_t defaultBaudeRate = 115200;
 	std::string defaultSensorPort = "COM12";
-	VnSensor vs;
-	vs.connect(defaultSensorPort, defaultBaudeRate);
-	if (vs.isConnected) {
-		std::cout << "Connected IMU at " << defaultSensorPort << " with BaudeRate " << defaultBaudeRate << std::endl;
-	}
-	else {
-		std::cout << "Failed to connect IMU at " << defaultSensorPort << " with BaudeRate " << defaultBaudeRate << std::endl;
+	IMU imu(defaultSensorPort, defaultBaudeRate, true);
+
+	if (!imu.ConnectIMU()) {
+		std::cout << "IMU FAILED TO CONNECT\n";
 	}
 
-	//Declare what we expect to get out of the IMU (GPS DATA)
-	BinaryOutputRegister bor(
-		ASYNCMODE_PORT1,
-		200,
-		COMMONGROUP_NONE,
-		TIMEGROUP_NONE,
-		IMUGROUP_NONE,
-		GPSGROUP_POSLLA,
-		ATTITUDEGROUP_NONE,
-		INSGROUP_NONE
-	);
+	imu.getAsynchData();
 
-	vs.writeBinaryOutput1(bor);
+	
 	
 
 	// Open the pxd opject
