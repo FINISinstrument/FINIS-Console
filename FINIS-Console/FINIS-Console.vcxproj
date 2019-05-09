@@ -157,7 +157,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ContextCamera.h" />
     <ClInclude Include="PXD.h" />
     <ClInclude Include="IMU.h" />
     <ClInclude Include="include\VimbaCPP\Include\VimbaCPP.h" />
@@ -169,7 +168,6 @@
     <ClInclude Include="XCLIB\xcliball.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ContextCamera.cpp" />
     <ClCompile Include="FINIS-Console.cpp" />
     <ClCompile Include="IMU.cpp" />
     <ClCompile Include="pch.cpp">

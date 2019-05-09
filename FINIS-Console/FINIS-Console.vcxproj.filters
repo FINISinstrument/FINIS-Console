@@ -68,7 +68,6 @@
     <ClCompile Include="Vimba.cpp" />
     <ClCompile Include="Shutter.cpp" />
     <ClCompile Include="PXD.cpp" />
-    <ClCompile Include="ContextCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IMU.h">
@@ -92,7 +91,6 @@
     <ClInclude Include="Vimba.h" />
     <ClInclude Include="Shutter.h" />
     <ClInclude Include="PXD.h" />
-    <ClInclude Include="ContextCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FINIS-Console.rc" />
