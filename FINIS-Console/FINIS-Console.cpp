@@ -24,19 +24,22 @@
 //header files we have written
 #include "IMU.h"
 
+// Context camera
+#include "ContextCamera.h"
+
 int main() {
 	Vimba vimba = Vimba();
 	vimba.startCamera();
 
 	Shutter shutter = Shutter();
-
 	
 	//Initial Set up for the IMU
+	/*
 	uint32_t defaultBaudeRate = 115200;
 	std::string defaultSensorPort = "COM12";
 	VnSensor vs;
 	vs.connect(defaultSensorPort, defaultBaudeRate);
-	if (vs.isConnected) {
+	if (vs.isConnected()) {
 		std::cout << "Connected IMU at " << defaultSensorPort << " with BaudeRate " << defaultBaudeRate << std::endl;
 	}
 	else {
@@ -56,26 +59,13 @@ int main() {
 	);
 
 	vs.writeBinaryOutput1(bor);
-	
+	*/
 
 	// Open the pxd opject
-	/*
-	std::cout << "Opening frame grabber...\n";
-	int openError = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup16Bit30Hz.fmt");
-	if (openError < 0) {
-		printf("error: %s\n", pxd_mesgErrorCode(openError));
-	}
-	Sleep(1000);
-	*/
 	PXD pxd ("C:/FINIS/testing");
 	std::cout << "Opened frame grabber\n";
 
-	/*
-	// Go live
-	pxd_goLive(1, 1);
-	while (!pxd_goneLive(1,0)) { Sleep(0); }
-	std::cout << "Gone live\n";
-	*/
+	ContextCamera context1("C:/FINIS/testing/context/");
 
 	int cmd;
 	bool done = false;
@@ -85,7 +75,9 @@ int main() {
 		std::cout << "2: Get real time LLA data\n";
 		std::cout << "3: Open shutter\n";
 		std::cout << "4: Close shutter\n";
-		std::cout << "5: Record stream\n";
+		std::cout << "5: Record stream (instrument)\n";
+		std::cout << "6: Record stream (context)\n";
+		std::cout << "7: Snap context photo\n";
 		std::cout << "Enter a cmd:";
 		std::cin >> cmd;
 
@@ -114,6 +106,14 @@ int main() {
 				std::cin >> frameCount;
 				pxd.video(frameCount);
 				
+				break;
+			}
+			case 6: {
+				context1.recordFrames(30);
+				break;
+			}
+			case 7: {
+				context1.snap();
 				break;
 			}
 			case 2: { //GET data from IMU (nonAsync) //TODO: make this Asynchronous

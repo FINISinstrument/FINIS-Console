@@ -1,8 +1,9 @@
 #include "ContextCamera.h"
 
 ContextCamera::ContextCamera(std::string basePath)
+	: cam(cv::VideoCapture())
 {
-	cam(0);
+	cam.open(0);
 
 	cam.set(cv::CAP_PROP_FRAME_WIDTH, 640);
 	cam.set(cv::CAP_PROP_FRAME_HEIGHT, 470);
