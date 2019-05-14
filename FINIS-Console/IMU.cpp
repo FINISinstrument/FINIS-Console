@@ -9,18 +9,19 @@ Designed to connect IMU and to set up functions to pull information off of the I
 
 
 //constructor
-IMU::IMU(std::string sensorPort, uint32_t sensorBaudeRate) {
+IMU::IMU(std::string sensorPort, uint32_t sensorBaudeRate, bool print) {
 	m_sensorPort = sensorPort;
 	m_sensorBaudeRate = sensorBaudeRate;
-	m_bor = BinaryOutputRegister( //TODO: decide what controls we want to give to the user over what is outputted
+	m_bor = BinaryOutputRegister( 
 		ASYNCMODE_PORT1,
 		200,
-		COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL,	// Note use of binary OR to configure flags.
+		COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL | COMMONGROUP_VELOCITY,	// Note use of binary OR to configure flags.
 		TIMEGROUP_NONE,
 		IMUGROUP_NONE,
 		GPSGROUP_POSLLA,
 		ATTITUDEGROUP_NONE,
 		INSGROUP_NONE);
+	m_print = print;
 }
 IMU::~IMU() {
 	if (vs.isConnected()) {
@@ -38,7 +39,7 @@ bool IMU::ConnectIMU() { //returns true if the sensor succesfully connects
 	return false;
 }
 
-void IMU::asciiOrBinaryAsyncMessageReceived(void * userData, Packet & p, size_t index) {
+void asciiOrBinaryAsyncMessageReceived(void * userData, Packet & p, size_t index) {
 	if (p.type() == Packet::TYPE_ASCII && p.determineAsciiAsyncType() == VNYPR) {
 		vec3f ypr;
 		p.parseVNYPR(&ypr);
@@ -50,7 +51,7 @@ void IMU::asciiOrBinaryAsyncMessageReceived(void * userData, Packet & p, size_t 
 		// First make sure we have a binary packet type we expect since there
 		// are many types of binary output types that can be configured.
 		if (!p.isCompatible(
-			COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL,
+			COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL| COMMONGROUP_VELOCITY,
 			TIMEGROUP_NONE,
 			IMUGROUP_NONE,
 			GPSGROUP_POSLLA,
@@ -68,17 +69,28 @@ void IMU::asciiOrBinaryAsyncMessageReceived(void * userData, Packet & p, size_t 
 		// the order they are organized in the binary packet per the User Manual.
 		uint64_t timeStartup = p.extractUint64();
 		vec3f ypr = p.extractVec3f();
+		vec3f vel = p.extractVec3f();
+		vec3d lla = p.extractVec3d();
+
 		//p.extract
 		std::cout << "Binary Async TimeStartup: " << timeStartup << std::endl;
 		std::cout << "Binary Async YPR: " << ypr << std::endl;
+		std::cout << "VEL X" << vel.x << std::endl;
+		std::cout << "VEL Y" << vel.y << std::endl;
+		std::cout << "VEL Z" << vel.z << std::endl;
+		std::cout << "LLA X" << lla.x << std::endl;
+		std::cout << "LLA Y" << lla.y << std::endl;
+		std::cout << "LLA Z" << lla.z << std::endl;
+
 	}
 
 }
 
-void IMU::getAsynchData(bool print) {
+void IMU::getAsynchData() {
+	std::cout << "Inside getAsyncData\n";
 	vs.writeBinaryOutput1(m_bor);
 	//TODO: figure out why this line doesn't work
-	//vs.registerAsyncPacketReceivedHandler(NULL, asciiOrBinaryAsyncMessageReceived);
+	vs.registerAsyncPacketReceivedHandler(NULL, asciiOrBinaryAsyncMessageReceived);
 
 	std::cout << "Starting sleep...\n";
 	Thread::sleepSec(5);
@@ -86,16 +98,5 @@ void IMU::getAsynchData(bool print) {
 	vs.unregisterAsyncPacketReceivedHandler();
 }
 
-void IMU::getNonAsyncData(){
-	GpsSolutionLlaRegister gps = vs.readGpsSolutionLla();
-	vec3f ypr = vs.readYawPitchRoll();
-	std::cout << "Current YPR: " << ypr << std::endl;
-	std::cout << "Current GPS Time: " << gps.time << std::endl;
-	std::cout << "Current GPS lla: " << gps.lla << std::endl;
-	std::cout << "Current GPS fix: " << gps.gpsFix << std::endl;
-	std::cout << "Current GPS nedAcc: " << gps.nedAcc << std::endl;
-	std::cout << "Current GPS week: " << gps.week << std::endl;
-	std::cout << "Current GPS speedAcc: " << gps.speedAcc << std::endl;
-	std::cout << "Number of Satallites: " << +gps.numSats << std::endl;
-}
+
 

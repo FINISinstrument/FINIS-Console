@@ -25,37 +25,20 @@
 #include "IMU.h"
 
 int main() {
-	Vimba vimba = Vimba();
-	vimba.startCamera();
+	//Vimba vimba = Vimba();
+	//vimba.startCamera();
 
 	Shutter shutter = Shutter();
 
 	
 	//Initial Set up for the IMU
 	uint32_t defaultBaudeRate = 115200;
-	std::string defaultSensorPort = "COM12";
-	VnSensor vs;
-	vs.connect(defaultSensorPort, defaultBaudeRate);
-	if (vs.isConnected) {
-		std::cout << "Connected IMU at " << defaultSensorPort << " with BaudeRate " << defaultBaudeRate << std::endl;
-	}
-	else {
-		std::cout << "Failed to connect IMU at " << defaultSensorPort << " with BaudeRate " << defaultBaudeRate << std::endl;
-	}
-
-	//Declare what we expect to get out of the IMU (GPS DATA)
-	BinaryOutputRegister bor(
-		ASYNCMODE_PORT1,
-		200,
-		COMMONGROUP_NONE,
-		TIMEGROUP_NONE,
-		IMUGROUP_NONE,
-		GPSGROUP_POSLLA,
-		ATTITUDEGROUP_NONE,
-		INSGROUP_NONE
-	);
-
-	vs.writeBinaryOutput1(bor);
+	std::string defaultSensorPort = "COM50";
+	//If true, IMU data will print to the screen
+	bool print = true;
+	IMU imu(defaultSensorPort, defaultBaudeRate, print);
+	
+	
 	
 
 	// Open the pxd opject
@@ -82,6 +65,7 @@ int main() {
 	while (!done) {
 		std::cout << "0: End Program\n";
 		std::cout << "1: Snap a photo\n";
+		//LLA: Longitude, Latitude, Altitude
 		std::cout << "2: Get real time LLA data\n";
 		std::cout << "3: Open shutter\n";
 		std::cout << "4: Close shutter\n";
@@ -100,6 +84,10 @@ int main() {
 
 				break;
 			}
+			case 2: {
+				imu.getAsynchData();
+				break;
+			}
 			case 3: {
 				shutter.openShutter();
 				break;
@@ -115,9 +103,6 @@ int main() {
 				pxd.video(frameCount);
 				
 				break;
-			}
-			case 2: { //GET data from IMU (nonAsync) //TODO: make this Asynchronous
-				//imu.getNonAsyncData();
 			}
 			default: { //print out all the options for keystrokes
 				std::cout << "Not a valid argument type\n";
