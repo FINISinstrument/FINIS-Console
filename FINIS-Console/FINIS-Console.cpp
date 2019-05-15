@@ -18,6 +18,9 @@
 // PXD
 #include "PXD.h"
 
+// Context camera
+#include "contextCamera.h"
+
 // Vimba class
 #include "Vimba.h"
 
@@ -33,16 +36,10 @@ int main() {
 	
 	//Initial Set up for the IMU
 	uint32_t defaultBaudeRate = 115200;
-	std::string defaultSensorPort = "COM12";
-	IMU imu(defaultSensorPort, defaultBaudeRate, true);
-
-	if (!imu.ConnectIMU()) {
-		std::cout << "IMU FAILED TO CONNECT\n";
-	}
-
-	imu.getAsynchData();
-
-	
+	std::string defaultSensorPort = "COM50";
+	//If true, IMU data will print to the screen
+	bool print = true;
+	IMU imu(defaultSensorPort, defaultBaudeRate, print);
 	
 
 	// Open the pxd opject
@@ -69,6 +66,7 @@ int main() {
 	while (!done) {
 		std::cout << "0: End Program\n";
 		std::cout << "1: Snap a photo\n";
+		//LLA: Longitude, Latitude, Altitude
 		std::cout << "2: Get real time LLA data\n";
 		std::cout << "3: Open shutter\n";
 		std::cout << "4: Close shutter\n";
@@ -87,6 +85,10 @@ int main() {
 
 				break;
 			}
+			case 2: {
+				imu.getAsynchData();
+				break;
+			}
 			case 3: {
 				shutter.openShutter();
 				break;
@@ -102,9 +104,6 @@ int main() {
 				pxd.video(frameCount);
 				
 				break;
-			}
-			case 2: { //GET data from IMU (nonAsync) //TODO: make this Asynchronous
-				//imu.getNonAsyncData();
 			}
 			default: { //print out all the options for keystrokes
 				std::cout << "Not a valid argument type\n";

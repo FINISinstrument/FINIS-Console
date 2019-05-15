@@ -10,19 +10,23 @@ Designed to connect IMU and to set up functions to pull information off of the I
 
 //constructor
 IMU::IMU(std::string sensorPort, uint32_t sensorBaudeRate, bool print) {
-	
-	m_print = print; 
+
+  // BEGIN Leftover from merge
+	m_print = print;
+  // END
+
 	m_sensorPort = sensorPort;
 	m_sensorBaudeRate = sensorBaudeRate;
-	m_bor = BinaryOutputRegister( //TODO: decide what controls we want to give to the user over what is outputted
+	m_bor = BinaryOutputRegister( 
 		ASYNCMODE_PORT1,
 		200,
-		COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL,	// Note use of binary OR to configure flags.
+		COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL | COMMONGROUP_VELOCITY,	// Note use of binary OR to configure flags.
 		TIMEGROUP_NONE,
 		IMUGROUP_NONE,
 		GPSGROUP_POSLLA,
 		ATTITUDEGROUP_NONE,
 		INSGROUP_NONE);
+	m_print = print;
 }
 IMU::~IMU() {
 	if (m_vs.isConnected()) {
@@ -56,7 +60,7 @@ void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index) 
 		// First make sure we have a binary packet type we expect since there
 		// are many types of binary output types that can be configured.
 		if (!p.isCompatible(
-			COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL,
+			COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL| COMMONGROUP_VELOCITY,
 			TIMEGROUP_NONE,
 			IMUGROUP_NONE,
 			GPSGROUP_POSLLA,
@@ -74,15 +78,18 @@ void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index) 
 		// the order they are organized in the binary packet per the User Manual.
 		uint64_t timeStartup = p.extractUint64();
 		vec3f ypr = p.extractVec3f();
-		vec3d posLLA = p.extractVec3d();
-		//if (m_print) {
-			std::cout << "Binary Async TimeStartup: " << timeStartup << std::endl;
-			std::cout << "Binary Async YPR:         " << ypr << std::endl;
-			std::cout << "Binary Async POS Long:    " << posLLA.x << std::endl;
-			std::cout << "Binary Async POS Lat:     " << posLLA.y << std::endl;
-			std::cout << "Binary Async POS Alt:     " << posLLA.z << std::endl;
-		//}
-		
+		vec3f vel = p.extractVec3f();
+		vec3d lla = p.extractVec3d();
+
+		//p.extract
+		std::cout << "Binary Async TimeStartup: " << timeStartup << std::endl;
+		std::cout << "Binary Async YPR: " << ypr << std::endl;
+		std::cout << "VEL X" << vel.x << std::endl;
+		std::cout << "VEL Y" << vel.y << std::endl;
+		std::cout << "VEL Z" << vel.z << std::endl;
+		std::cout << "LLA X" << lla.x << std::endl;
+		std::cout << "LLA Y" << lla.y << std::endl;
+		std::cout << "LLA Z" << lla.z << std::endl;
 	}
 
 }

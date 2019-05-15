@@ -99,7 +99,9 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 	while ((frameCount < count && !secondsCount) || (duration < count && secondsCount)) {
 		firstHalf = 1 - firstHalf;
 		// Wait for semaphore
+		std::cout << "Waiting for semaphore\n";
 		WaitForSingleObject(ghSemaphore, INFINITE);
+		std::cout << "got semaphore\n";
 
 		// Save frames
 		for (int i = 0; i < halfBufferSize; i++) {
@@ -155,7 +157,7 @@ int PXD::video(int frameCount) {
 	// Save images, wait for record to finish
 	//std::thread saveThread(saveFrames, frameCount, 1);
 	//std::thread saveThread(saveFrames, 10, 1, true); // 10 seconds to save
-	std::thread saveThread(saveFrames, frameCount, 1, false); // 10 seconds to save
+	std::thread saveThread(saveFrames, frameCount, 1, false); // frames to save
 	recordThread.join();
 
 	// Getting time to record frames

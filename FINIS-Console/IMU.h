@@ -11,6 +11,7 @@ using namespace vn::math;
 using namespace vn::sensors;
 using namespace vn::protocol::uart;
 using namespace vn::xplat;
+void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 
 void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 
