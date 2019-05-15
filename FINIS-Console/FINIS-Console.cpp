@@ -1,4 +1,4 @@
-// FINIS-Console.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// FINIS-Console.cpp : This file contains the 'main' function. Program execution begins and ends here.
 
 #include "pch.h"
 #include <iostream>
@@ -40,8 +40,6 @@ int main() {
 	//If true, IMU data will print to the screen
 	bool print = true;
 	IMU imu(defaultSensorPort, defaultBaudeRate, print);
-	
-	
 	
 
 	// Open the pxd opject

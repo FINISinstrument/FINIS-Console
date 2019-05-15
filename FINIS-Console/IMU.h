@@ -13,6 +13,8 @@ using namespace vn::protocol::uart;
 using namespace vn::xplat;
 void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 
+void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
+
 class IMU {
 public:
 	//constructor/destructor
@@ -20,14 +22,14 @@ public:
 	~IMU();
 	
 	bool ConnectIMU();
-	
+	//void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 	void getAsynchData();
-
+	void getNonAsyncData();
 
 private:
 	std::string m_sensorPort;
 	uint32_t m_sensorBaudeRate;
-	VnSensor vs;
+	VnSensor m_vs;
 	BinaryOutputRegister m_bor;
 	bool m_print;
 };

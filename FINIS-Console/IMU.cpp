@@ -10,6 +10,11 @@ Designed to connect IMU and to set up functions to pull information off of the I
 
 //constructor
 IMU::IMU(std::string sensorPort, uint32_t sensorBaudeRate, bool print) {
+
+  // BEGIN Leftover from merge
+	m_print = print;
+  // END
+
 	m_sensorPort = sensorPort;
 	m_sensorBaudeRate = sensorBaudeRate;
 	m_bor = BinaryOutputRegister( 
@@ -24,22 +29,26 @@ IMU::IMU(std::string sensorPort, uint32_t sensorBaudeRate, bool print) {
 	m_print = print;
 }
 IMU::~IMU() {
-	if (vs.isConnected()) {
-		vs.disconnect();
+	if (m_vs.isConnected()) {
+		m_vs.disconnect();
 	}
 }
 
 bool IMU::ConnectIMU() { //returns true if the sensor succesfully connects
-	vs.connect(m_sensorPort, m_sensorBaudeRate);
-	if (vs.isConnected ()) {
-		std::cout << "IMU successfully connected on " << m_sensorPort << " With Baudrate: " << m_sensorBaudeRate << std::endl;
+	try {
+		m_vs.connect(m_sensorPort, m_sensorBaudeRate);
+		m_vs.writeBinaryOutput1(m_bor);
+	}
+	catch (std::exception ex) {
+		std::cout << "Failed to connect IMU at " << m_sensorPort << " with BaudeRate " << m_sensorBaudeRate << std::endl;
+	}
+	if (m_vs.isConnected()) {
 		return true;
 	}
-	std::cout << "IMU failed to connect on " << m_sensorPort << " With Baudrate: " << m_sensorBaudeRate << std::endl;
 	return false;
 }
 
-void asciiOrBinaryAsyncMessageReceived(void * userData, Packet & p, size_t index) {
+void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index) {
 	if (p.type() == Packet::TYPE_ASCII && p.determineAsciiAsyncType() == VNYPR) {
 		vec3f ypr;
 		p.parseVNYPR(&ypr);
@@ -81,22 +90,31 @@ void asciiOrBinaryAsyncMessageReceived(void * userData, Packet & p, size_t index
 		std::cout << "LLA X" << lla.x << std::endl;
 		std::cout << "LLA Y" << lla.y << std::endl;
 		std::cout << "LLA Z" << lla.z << std::endl;
-
 	}
 
 }
 
 void IMU::getAsynchData() {
-	std::cout << "Inside getAsyncData\n";
-	vs.writeBinaryOutput1(m_bor);
+	m_vs.writeBinaryOutput1(m_bor);
 	//TODO: figure out why this line doesn't work
-	vs.registerAsyncPacketReceivedHandler(NULL, asciiOrBinaryAsyncMessageReceived);
+	m_vs.registerAsyncPacketReceivedHandler(NULL, asciiOrBinaryAsyncMessageReceived);
 
 	std::cout << "Starting sleep...\n";
 	Thread::sleepSec(5);
 
-	vs.unregisterAsyncPacketReceivedHandler();
+	m_vs.unregisterAsyncPacketReceivedHandler();
 }
 
-
+void IMU::getNonAsyncData(){
+	GpsSolutionLlaRegister gps = m_vs.readGpsSolutionLla();
+	vec3f ypr = m_vs.readYawPitchRoll();
+	std::cout << "Current YPR: " << ypr << std::endl;
+	std::cout << "Current GPS Time: " << gps.time << std::endl;
+	std::cout << "Current GPS lla: " << gps.lla << std::endl;
+	std::cout << "Current GPS fix: " << gps.gpsFix << std::endl;
+	std::cout << "Current GPS nedAcc: " << gps.nedAcc << std::endl;
+	std::cout << "Current GPS week: " << gps.week << std::endl;
+	std::cout << "Current GPS speedAcc: " << gps.speedAcc << std::endl;
+	std::cout << "Number of Satallites: " << +gps.numSats << std::endl;
+}
 
