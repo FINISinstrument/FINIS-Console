@@ -18,6 +18,9 @@
 // PXD
 #include "PXD.h"
 
+// Context camera
+#include "contextCamera.h"
+
 // Vimba class
 #include "Vimba.h"
 
@@ -25,8 +28,8 @@
 #include "IMU.h"
 
 int main() {
-	//Vimba vimba = Vimba();
-	//vimba.startCamera();
+	Vimba vimba = Vimba();
+	vimba.startCamera();
 
 	Shutter shutter = Shutter();
 
