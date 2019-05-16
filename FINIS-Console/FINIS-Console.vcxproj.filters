@@ -93,6 +93,7 @@
     <ClInclude Include="Shutter.h" />
     <ClInclude Include="PXD.h" />
     <ClInclude Include="contextCamera.h" />
+    <ClInclude Include="constants.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FINIS-Console.rc" />

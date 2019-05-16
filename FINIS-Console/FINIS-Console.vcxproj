@@ -160,6 +160,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="constants.h" />
     <ClInclude Include="contextCamera.h" />
     <ClInclude Include="PXD.h" />
     <ClInclude Include="IMU.h" />
