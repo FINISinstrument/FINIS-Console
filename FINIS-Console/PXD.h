@@ -5,7 +5,12 @@
 #include <future>
 #include <thread>
 #include <atomic>
+#include <vector>
 #include "XCLIB/xcliball.h"
+
+#include "contextCamera.h"
+
+#include "constants.h"
 
 class PXD {
 	public:
@@ -16,6 +21,8 @@ class PXD {
 
 		int snap(std::string imageName);
 		int video(int frameCount);
+
+		void addContextCamera(ContextCamera &camera);
 	private:
 		int openPXD();
 
@@ -54,4 +61,7 @@ class PXD {
 		static uint32_t* frameTimestamps;
 
 		static bool firstHandleRun;
+
+		// Reference to context cameras that need to be snapped
+		static std::vector<ContextCamera> contextCameras;
 };

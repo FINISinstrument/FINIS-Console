@@ -1,6 +1,9 @@
-#include "ContextCamera.h"
+#include "contextCamera.h"
 
-ContextCamera::ContextCamera(std::string basePath)
+ContextCamera::ContextCamera() {
+
+}
+ContextCamera::ContextCamera(std::string basePath, std::string camera)
 {
 	cam.open(0);
 
@@ -10,6 +13,10 @@ ContextCamera::ContextCamera(std::string basePath)
 
 	filePath = basePath;
 	frameIndex = 0;
+	folderNumber = 0;
+
+	cameraName = camera;
+	//semaphore = CreateSemaphore(NULL, 1, 1, NULL);
 }
 
 ContextCamera::~ContextCamera() {
@@ -17,8 +24,16 @@ ContextCamera::~ContextCamera() {
 }
 
 int ContextCamera::snap() {
+	// Check if new folder needs to be created
+	int temp = 1 + frameIndex / FRAMES_IN_FOLDER;
+	if (temp != folderNumber) {
+		folderNumber = temp;
+		CreateDirectoryA((filePath + "/" + std::to_string(folderNumber)).c_str(), NULL);
+	}
+
+	// Snap a picture
 	cam >> frame;
-	imwrite((filePath + std::to_string(frameIndex++) + ".tiff").c_str(), frame);
+	imwrite((filePath + "/" + std::to_string(folderNumber) + "/" + cameraName + std::to_string(frameIndex++) + ".tiff").c_str(), frame);
 	return 0;
 }
 

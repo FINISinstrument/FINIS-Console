@@ -71,6 +71,10 @@ void PXD::recordFrames(int videoPeriod) {
 		time = pxd_buffersSysTicks(1, i);
 		if (time > frameTimestamps[i]) {
 			frameTimestamps[i++] = time;
+			// Every time there is a new frame, context frames need to be saved
+			for (int i = 0; i < contextCameras.size(); i++) {
+				contextCameras[i].snap();
+			}
 		}
 		// Check if we should start the next save cycle
 		if (i % halfBufferSize == 0) {
@@ -90,6 +94,8 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 	int frameCount = 0;
 	int firstHalf = 1;
 
+	int folderNumber = 1;
+
 	// Get start time
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
@@ -103,9 +109,14 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 		WaitForSingleObject(ghSemaphore, INFINITE);
 		std::cout << "got semaphore\n";
 
+		// Set subfolder value
+		folderNumber = 1 + frameCount / FRAMES_IN_FOLDER;
+		// Attemp to create subfolder
+		CreateDirectoryA((folderPath + "/" + std::to_string(folderNumber)).c_str(), NULL);
+
 		// Save frames
 		for (int i = 0; i < halfBufferSize; i++) {
-			pxd_saveTiff(1, (folderPath + "/" + std::to_string(frameCount + i) + ".tiff").c_str(), (firstHalf * 200) + i, 0, 0, -1, -1, 0, 0);
+			pxd_saveTiff(1, (folderPath + "/" + std::to_string(folderNumber) + "/IR_" + std::to_string(frameCount + i) + ".tiff").c_str(), (firstHalf * 200) + i, 0, 0, -1, -1, 0, 0);
 		}
 		// Update reference metrics
 		t2 = std::chrono::high_resolution_clock::now();
@@ -178,6 +189,10 @@ int PXD::video(int frameCount) {
 	CloseHandle(ghSemaphore);
 
 	return 0;
+}
+
+void PXD::addContextCamera(ContextCamera &camera) {
+	contextCameras.push_back(camera);
 }
 
 int PXD::openPXD() {

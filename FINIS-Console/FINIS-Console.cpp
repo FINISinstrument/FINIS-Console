@@ -32,7 +32,6 @@ int main() {
 	vimba.startCamera();
 
 	Shutter shutter = Shutter();
-
 	
 	//Initial Set up for the IMU
 	uint32_t defaultBaudeRate = 115200;
@@ -53,6 +52,12 @@ int main() {
 	*/
 	PXD pxd ("C:/FINIS/testing");
 	std::cout << "Opened frame grabber\n";
+
+	// Open context cameras
+	ContextCamera context1("C:/FINIS/testing", "context");
+
+	// Add context cameras to PXD object
+	pxd.addContextCamera(context1);
 
 	/*
 	// Go live
@@ -81,8 +86,6 @@ int main() {
 			}
 			case 1: {// Snap a picture!
 				pxd.snap("snapper");
-
-
 				break;
 			}
 			case 2: {
@@ -98,7 +101,7 @@ int main() {
 				break;
 			}
 			case 5: {
-				std::cout << "Enter frame count (max 400: ";
+				std::cout << "Enter frame count: ";
 				int frameCount;
 				std::cin >> frameCount;
 				pxd.video(frameCount);
