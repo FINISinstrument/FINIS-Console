@@ -14,6 +14,7 @@ uint32_t* PXD::frameTimestamps = new uint32_t[PXD::halfBufferSize * 2];
 std::atomic<bool> PXD::finishedWithVideo = false;
 bool PXD::firstHandleRun = true;
 HANDLE PXD::ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
+std::vector<ContextCamera> PXD::contextCameras = std::vector<ContextCamera>();
 
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
 {
@@ -64,17 +65,19 @@ void PXD::recordFrames(int videoPeriod) {
 	uint32_t time;
 	bool first = true;
 
-	pxd_goLiveSeq(1, 1, 400, 1, 0, videoPeriod);
+	pxd_goLiveSeq(1, 0, 399, 1, 0, videoPeriod);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
-	while (!finishedWithVideo || i % 200 != 0) {
+	while (!finishedWithVideo || i % 200 != 0) { //TODO end loop logic needs to be reworked
+		std::cout << "Record is looping!" << i << "\n";
 		// Put timestamp into buffer
 		time = pxd_buffersSysTicks(1, i);
-		if (time > frameTimestamps[i]) {
-			frameTimestamps[i++] = time;
+		if (time != frameTimestamps[i%400]) {
+			frameTimestamps[(i++)%400] = time;
 			// Every time there is a new frame, context frames need to be saved
 			for (int i = 0; i < contextCameras.size(); i++) {
-				contextCameras[i].snap();
+				//contextCameras[i].snap();
 			}
+			std::cout << "Frame index: " << i << "\n";
 		}
 		// Check if we should start the next save cycle
 		if (i % halfBufferSize == 0) {
@@ -86,8 +89,11 @@ void PXD::recordFrames(int videoPeriod) {
 			}
 		}
 	}
+	std::cout << "record frames, relesaing last semaphore\n";
 	ReleaseSemaphore(ghSemaphore, 1, NULL);
+	std::cout << "record frames, going unlive\n";
 	pxd_goUnLive(1);
+	std::cout << "record frames, finished\n";
 }
 
 void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
@@ -124,6 +130,7 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 		frameCount += halfBufferSize;
 	}
 	// Should be done recording
+	std::cout << "Finishing with video, save thread\n";
 	finishedWithVideo = true;
 	std::cout << "frameCount: " << frameCount << "\n";
 }
@@ -149,6 +156,11 @@ int PXD::video(int frameCount) {
 	// Create directory
 	CreateDirectoryA(folderPath.c_str(), NULL);
 	std::cout << GetLastError() << "\n";
+
+	// Update context cameras working directory
+	for (int i = 0; i < contextCameras.size(); i++) {
+		contextCameras[i].setFilePath(folderPath);
+	}
 	
 	// Create semaphore object for syncronizing saving
 	if (firstHandleRun) {
@@ -169,14 +181,18 @@ int PXD::video(int frameCount) {
 	//std::thread saveThread(saveFrames, frameCount, 1);
 	//std::thread saveThread(saveFrames, 10, 1, true); // 10 seconds to save
 	std::thread saveThread(saveFrames, frameCount, 1, false); // frames to save
+	std::cout << " waiting for record thread\n";
 	recordThread.join();
+	std::cout << " record thread joined\n";
 
 	// Getting time to record frames
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 	std::cout << "Record took " << duration << " microseconds to capture " << frameCount << " frames\n";
 
 	// Wait for save to finish
+	std::cout << " waiting for save thread\n";
 	saveThread.join();
+	std::cout << " save thread joined\n";
 
 	/*
 	std::cout << "Outputing times from buffer:\n";
@@ -193,6 +209,10 @@ int PXD::video(int frameCount) {
 
 void PXD::addContextCamera(ContextCamera &camera) {
 	contextCameras.push_back(camera);
+}
+
+std::string PXD::getFolderPath() {
+	return folderPath;
 }
 
 int PXD::openPXD() {

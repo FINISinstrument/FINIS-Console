@@ -23,6 +23,8 @@ class PXD {
 		int video(int frameCount);
 
 		void addContextCamera(ContextCamera &camera);
+
+		std::string getFolderPath();
 	private:
 		int openPXD();
 
