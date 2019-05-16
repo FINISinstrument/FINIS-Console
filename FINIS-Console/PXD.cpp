@@ -68,9 +68,9 @@ void PXD::recordFrames(int videoPeriod) {
 	pxd_goLiveSeq(1, 0, 399, 1, 0, videoPeriod);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
 	while (!finishedWithVideo || i % 200 != 0) { //TODO end loop logic needs to be reworked
-		std::cout << "Record is looping!" << i << "\n";
 		// Put timestamp into buffer
 		time = pxd_buffersSysTicks(1, i);
+		std::cout << "Record is looping! I: " << i << "\tTime: " << time << "\tframeTimeStamps: " << frameTimestamps[i%400] << "\n";
 		if (time != frameTimestamps[i%400]) {
 			frameTimestamps[(i++)%400] = time;
 			// Every time there is a new frame, context frames need to be saved
