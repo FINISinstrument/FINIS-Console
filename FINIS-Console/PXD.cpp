@@ -15,7 +15,6 @@ std::atomic<bool> PXD::finishedWithVideo = false;
 bool PXD::firstHandleRun = true;
 HANDLE PXD::ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
 std::vector<ContextCamera> PXD::contextCameras = std::vector<ContextCamera>();
-int PXD::frameCountRemainder = 0;
 
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
 {
@@ -64,58 +63,34 @@ int PXD::snap(std::string imageName) {
 void PXD::recordFrames(int videoPeriod) {
 	int i = 0;
 	uint32_t time;
+	uint32_t last_time;
 	bool first = true;
 
-	pxd_goLiveSeq(1, 0, 400, 1, 0, videoPeriod);
+	pxd_goLiveSeq(1, 1, 400, 1, 0, videoPeriod);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
-	/*while (!finishedWithVideo || i % 200 != 0) { //TODO end loop logic needs to be reworked
-		// Put timestamp into buffer
-		time = pxd_buffersSysTicks(1, i%400);
-		std::cout << "Record is looping! I: " << i << "\tTime: " << time << "\tframeTimeStamps: " << frameTimestamps[i%400] << "\n";
-		if (time != frameTimestamps[i%400]) {
-			frameTimestamps[(i++)%400] = time;
-			// Every time there is a new frame, context frames need to be saved
-			for (int i = 0; i < contextCameras.size(); i++) {
-				//contextCameras[i].snap();
-			}
-			std::cout << "Frame index: " << i << "\n";
-		}
-		// Check if we should start the next save cycle
-		if (i % halfBufferSize == 0) {
-			if (first) {
-				first = false;
-			}
-			else {
-				ReleaseSemaphore(ghSemaphore, 1, NULL);
-			}
-		}
-	}*/
-	frameCountRemainder = 0;
+
+	last_time = 0;
 	while (!finishedWithVideo) {
 		int workingIndex = i % 400;
 		// Put timestamp into buffer
-		time = pxd_buffersSysTicks(1, workingIndex);
-		std::cout << "I: " << i << "\tTime: " << time << "\n";
-		if (time != frameTimestamps[workingIndex]) {
+		time = pxd_capturedSysTicks(1);
+
+		//std::cout << "I: " << i << "\tTime: " << time << "\n";
+		if (time != last_time) {
 			frameTimestamps[workingIndex] = time;
+			last_time = time;
 			i++;
-			frameCountRemainder++;
-		}
-		// Check for saving from buffer
-		if (i % 400 == 0) {
-			if (i != 0) {
-				first = false;
-			}
-			if (!first) {
+
+			// Check for saving from buffer
+			if (i % 200 == 0) {
 				ReleaseSemaphore(ghSemaphore, 1, NULL);
 			}
 		}
 	}
-	std::cout << "record frames, relesaing last semaphore\n";
-	ReleaseSemaphore(ghSemaphore, 1, NULL);
-	std::cout << "record frames, going unlive\n";
 	pxd_goUnLive(1);
-	std::cout << "record frames, finished\n";
+	/*for (int i = 0; i < 400; i++) {
+		std::cout << "  I: " << i << "\tTime: " << frameTimestamps[i] << "\n";
+	}*/
 }
 
 void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
@@ -130,33 +105,29 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
 	// Loop until we have hit frameCount
-	DWORD wait_result;
 	while ((frameCount < count && !secondsCount) || (duration < count && secondsCount)) {
 		firstHalf = 1 - firstHalf;
 		// Wait for semaphore
 		std::cout << "Waiting for semaphore\n";
-		wait_result = WaitForSingleObject(ghSemaphore, 2000); // Changing to be noninfinite
+		WaitForSingleObject(ghSemaphore, INFINITE); // Changing to be noninfinite
 		std::cout << "got semaphore\n";
 
-		if (WAIT_OBJECT_0 == wait_result) {
-			// Set subfolder value
-			folderNumber = 1 + frameCount / FRAMES_IN_FOLDER;
-			// Attemp to create subfolder
-			CreateDirectoryA((folderPath + "/" + std::to_string(folderNumber)).c_str(), NULL);
+		// Set subfolder value
+		folderNumber = 1 + frameCount / FRAMES_IN_FOLDER;
+		// Attemp to create subfolder
+		CreateDirectoryA((folderPath + "/" + std::to_string(folderNumber)).c_str(), NULL);
 
-			// Save frames
-			for (int i = 0; i < halfBufferSize; i++) {
-				pxd_saveTiff(1, (folderPath + "/" + std::to_string(folderNumber) + "/IR_" + std::to_string(frameCount + i) + ".tiff").c_str(), (firstHalf * 200) + i, 0, 0, -1, -1, 0, 0);
-			}
+		// Save frames
+		for (int i = 0; i < halfBufferSize; i++) {
+			pxd_saveTiff(1, (folderPath + "/" + std::to_string(folderNumber) + "/IR_" + std::to_string(frameCount + i) + ".tiff").c_str(), (firstHalf * 200) + i + 1, 0, 0, -1, -1, 0, 0);
 		}
 		// Update reference metrics
 		t2 = std::chrono::high_resolution_clock::now();
 		duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 		frameCount += halfBufferSize;
 	}
-	// Should be done recording
-	std::cout << "Finishing with video, save thread\n";
 	finishedWithVideo = true;
+	// Should be done recording
 	std::cout << "frameCount: " << frameCount << "\n";
 }
 
