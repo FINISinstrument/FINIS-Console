@@ -15,6 +15,7 @@ std::atomic<bool> PXD::finishedWithVideo = false;
 bool PXD::firstHandleRun = true;
 HANDLE PXD::ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
 std::vector<ContextCamera> PXD::contextCameras = std::vector<ContextCamera>();
+std::ofstream* PXD::f_irTimestamps = NULL;
 
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
 {
@@ -122,7 +123,7 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 			// Save frame
 			pxd_saveTiff(1, (folderPath + "/" + std::to_string(folderNumber) + "/IR_" + std::to_string(frameCount + i) + ".tiff").c_str(), (firstHalf * 200) + i + 1, 0, 0, -1, -1, 0, 0);
 			// Save frame timestamp
-			f_irTimestamps << i << "\t" << frameTimeStamps[(firstHalf * 200) + i] << "\n";
+			*f_irTimestamps << frameCount + i << "\t" << frameTimestamps[(firstHalf * 200) + i] << "\n";
 		}
 		// Update reference metrics
 		t2 = std::chrono::high_resolution_clock::now();
@@ -171,7 +172,7 @@ int PXD::video(int frameCount) {
 	WaitForSingleObject(ghSemaphore, INFINITE);
 
 	// Create the file to store the IR camera timestamps
-	f_irTimestamps.open((folderPath + "ir_timestapms.txt").c_str());
+	f_irTimestamps = new std::ofstream((folderPath + "/ir_timestamps.txt").c_str());
 
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
@@ -207,7 +208,8 @@ int PXD::video(int frameCount) {
 	CloseHandle(ghSemaphore);
 
 	// Close files
-	f_irTimestamps.close();
+	f_irTimestamps->close();
+	delete f_irTimestamps;
 
 	return 0;
 }

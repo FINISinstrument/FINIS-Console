@@ -67,5 +67,5 @@ class PXD {
 		// Reference to context cameras that need to be snapped
 		static std::vector<ContextCamera> contextCameras;
 
-		static std::ofstream f_irTimestamps;
+		static std::ofstream* f_irTimestamps;
 };
