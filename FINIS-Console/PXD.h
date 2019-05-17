@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <fstream>
 #include <ctime> // Used for getting dateTime
 #include <future>
 #include <thread>
@@ -65,4 +66,6 @@ class PXD {
 
 		// Reference to context cameras that need to be snapped
 		static std::vector<ContextCamera> contextCameras;
+
+		static std::ofstream f_irTimestamps;
 };

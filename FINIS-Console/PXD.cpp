@@ -117,9 +117,12 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 		// Attemp to create subfolder
 		CreateDirectoryA((folderPath + "/" + std::to_string(folderNumber)).c_str(), NULL);
 
-		// Save frames
+		// Save data
 		for (int i = 0; i < halfBufferSize; i++) {
+			// Save frame
 			pxd_saveTiff(1, (folderPath + "/" + std::to_string(folderNumber) + "/IR_" + std::to_string(frameCount + i) + ".tiff").c_str(), (firstHalf * 200) + i + 1, 0, 0, -1, -1, 0, 0);
+			// Save frame timestamp
+			f_irTimestamps << i << "\t" << frameTimeStamps[(firstHalf * 200) + i] << "\n";
 		}
 		// Update reference metrics
 		t2 = std::chrono::high_resolution_clock::now();
@@ -167,6 +170,9 @@ int PXD::video(int frameCount) {
 	std::cout << "intital decrement\n";
 	WaitForSingleObject(ghSemaphore, INFINITE);
 
+	// Create the file to store the IR camera timestamps
+	f_irTimestamps.open((folderPath + "ir_timestapms.txt").c_str());
+
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
 	// Spawn thread to record frames
@@ -199,6 +205,9 @@ int PXD::video(int frameCount) {
 
 	// Close semaphore
 	CloseHandle(ghSemaphore);
+
+	// Close files
+	f_irTimestamps.close();
 
 	return 0;
 }
