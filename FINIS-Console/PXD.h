@@ -44,7 +44,7 @@ class PXD {
 		std::string liveName;
 		std::string dateTime;
 		//int frameCount;
-		int frameCountRemainder;
+		static int frameCountRemainder;
 		int imagesCaptured;
 
 		static int halfBufferSize;
