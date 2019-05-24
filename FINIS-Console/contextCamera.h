@@ -6,16 +6,17 @@
 #include <thread>
 #include <atomic>
 #include "opencv2/opencv.hpp"
+#include "opencv2/core.hpp"
 
 #include "constants.h"
 
 class ContextCamera {
 public:
 	ContextCamera();
-	ContextCamera(std::string basePath, std::string camera);
+	ContextCamera(int camera_id, std::string basePath, std::string camera);
 	~ContextCamera();
 
-	void setFilePath(std::string path) { filePath = path; }
+	void setFilePath(std::string path) { filePath = path; frameIndex = 0; folderNumber = 0; }
 	void setCameraName(std::string name) { cameraName = name; }
 
 	int snap();

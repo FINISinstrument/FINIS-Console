@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <thread>
 #include <chrono>
+
 #include "PXD.h"
 
 // Static member variables defined
@@ -12,9 +13,14 @@ int PXD::halfBufferSize = 200;
 std::string PXD::folderPath = "C:/Users/FINIS/Desktop/";
 uint32_t* PXD::frameTimestamps = new uint32_t[PXD::halfBufferSize * 2];
 std::atomic<bool> PXD::finishedWithVideo = false;
+std::atomic<bool> PXD::finishedWithContext = false;
 bool PXD::firstHandleRun = true;
 HANDLE PXD::ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
+HANDLE PXD::context1_semaphore = CreateSemaphore(NULL, 1, 1, NULL);
+HANDLE PXD::context2_semaphore = CreateSemaphore(NULL, 1, 1, NULL);
 std::vector<ContextCamera> PXD::contextCameras = std::vector<ContextCamera>();
+ContextCamera PXD::contextCamera_1 = ContextCamera();
+ContextCamera PXD::contextCamera_2 = ContextCamera();
 std::ofstream* PXD::f_irTimestamps = NULL;
 
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
@@ -82,16 +88,34 @@ void PXD::recordFrames(int videoPeriod) {
 			last_time = time;
 			i++;
 
+			ReleaseSemaphore(context1_semaphore, 1, NULL);
+			ReleaseSemaphore(context2_semaphore, 1, NULL);
+
 			// Check for saving from buffer
 			if (i % 200 == 0) {
 				ReleaseSemaphore(ghSemaphore, 1, NULL);
 			}
 		}
 	}
+	finishedWithContext = true;
 	pxd_goUnLive(1);
 	/*for (int i = 0; i < 400; i++) {
 		std::cout << "  I: " << i << "\tTime: " << frameTimestamps[i] << "\n";
 	}*/
+}
+
+void PXD::contextOneSnapper() {
+	while (!finishedWithContext) {
+		//std::cout << "Watigin for context 1\n";
+		//WaitForSingleObject(context1_semaphore, INFINITE);
+		contextCamera_1.snap();
+	}
+}
+void PXD::contextTwoSnapper() {
+	while (!finishedWithContext) {
+		//WaitForSingleObject(context2_semaphore, INFINITE);
+		contextCamera_2.snap();
+	}
 }
 
 void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
@@ -121,7 +145,7 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 		// Save data
 		for (int i = 0; i < halfBufferSize; i++) {
 			// Save frame
-			pxd_saveTiff(1, (folderPath + "/" + std::to_string(folderNumber) + "/IR_" + std::to_string(frameCount + i) + ".tiff").c_str(), (firstHalf * 200) + i + 1, 0, 0, -1, -1, 0, 0);
+			pxd_saveTiff(1, (folderPath + "/" + std::to_string(folderNumber) + "/IR_" + ZeroPadString(frameCount + i + 1) + ".tiff").c_str(), (firstHalf * 200) + i + 1, 0, 0, -1, -1, 0, 0);
 			// Save frame timestamp
 			*f_irTimestamps << frameCount + i << "\t" << frameTimestamps[(firstHalf * 200) + i] << "\n";
 		}
@@ -161,18 +185,33 @@ int PXD::video(int frameCount) {
 	for (int i = 0; i < contextCameras.size(); i++) {
 		contextCameras[i].setFilePath(folderPath);
 	}
+	contextCamera_1.setFilePath(folderPath);
+	contextCamera_2.setFilePath(folderPath);
 	
 	// Create semaphore object for syncronizing saving
 	if (firstHandleRun) {
 		CloseHandle(ghSemaphore);
+		CloseHandle(context1_semaphore);
+		CloseHandle(context2_semaphore);
 		firstHandleRun = false;
 	}
 	ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
 	std::cout << "intital decrement\n";
 	WaitForSingleObject(ghSemaphore, INFINITE);
 
+	context1_semaphore = CreateSemaphore(NULL, 1, 150, NULL);
+	std::cout << "intital decrement\n";
+	WaitForSingleObject(context1_semaphore, INFINITE);
+
+	context2_semaphore = CreateSemaphore(NULL, 1, 150, NULL);
+	std::cout << "intital decrement\n";
+	WaitForSingleObject(context2_semaphore, INFINITE);
+
 	// Create the file to store the IR camera timestamps
 	f_irTimestamps = new std::ofstream((folderPath + "/ir_timestamps.txt").c_str());
+
+	std::thread context1(contextOneSnapper);
+	std::thread context2(contextTwoSnapper);
 
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
@@ -196,6 +235,8 @@ int PXD::video(int frameCount) {
 	std::cout << " waiting for save thread\n";
 	saveThread.join();
 	std::cout << " save thread joined\n";
+	context1.join();
+	context2.join();
 
 	/*
 	std::cout << "Outputing times from buffer:\n";
@@ -206,6 +247,8 @@ int PXD::video(int frameCount) {
 
 	// Close semaphore
 	CloseHandle(ghSemaphore);
+	CloseHandle(context1_semaphore);
+	CloseHandle(context2_semaphore);
 
 	// Close files
 	f_irTimestamps->close();
@@ -216,6 +259,12 @@ int PXD::video(int frameCount) {
 
 void PXD::addContextCamera(ContextCamera &camera) {
 	contextCameras.push_back(camera);
+}
+void PXD::setContextCamera1(ContextCamera &camera) {
+	contextCamera_1 = camera;
+}
+void PXD::setContextCamera2(ContextCamera &camera) {
+	contextCamera_2 = camera;
 }
 
 std::string PXD::getFolderPath() {

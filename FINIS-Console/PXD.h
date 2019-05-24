@@ -24,6 +24,8 @@ class PXD {
 		int video(int frameCount);
 
 		void addContextCamera(ContextCamera &camera);
+		void setContextCamera1(ContextCamera &camera);
+		void setContextCamera2(ContextCamera &camera);
 
 		std::string getFolderPath();
 	private:
@@ -33,6 +35,9 @@ class PXD {
 
 		static void recordFrames(int videoPeriod);
 		static void saveFrames(int count, int videoPeriod, bool secondsCount);
+
+		static void contextOneSnapper();
+		static void contextTwoSnapper();
 
 		int enable();
 		int disable();
@@ -52,9 +57,7 @@ class PXD {
 		static std::string folderPath;
 
 		static std::atomic<bool> finishedWithVideo;
-
-		// Semaphore information
-		static HANDLE ghSemaphore;
+		static std::atomic<bool> finishedWithContext;
 
 		std::string baseImagePath = "C:/FINIS/testing/Image/";
 		std::string baseVideoPath = "C:/FINIS/testing/Video/";
@@ -66,6 +69,13 @@ class PXD {
 
 		// Reference to context cameras that need to be snapped
 		static std::vector<ContextCamera> contextCameras;
+		static ContextCamera contextCamera_1;
+		static ContextCamera contextCamera_2;
+
+		// Semaphore information
+		static HANDLE ghSemaphore;
+		static HANDLE context1_semaphore;
+		static HANDLE context2_semaphore;
 
 		static std::ofstream* f_irTimestamps;
 };

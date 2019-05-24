@@ -5,13 +5,15 @@
 #include "vn/sensors.h"
 #include "vn/thread.h"
 
+#include <fstream>
 #include <string>
+#include <algorithm>
+#include <ctime>
 
 using namespace vn::math;
 using namespace vn::sensors;
 using namespace vn::protocol::uart;
 using namespace vn::xplat;
-void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 
 void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 
@@ -22,9 +24,8 @@ public:
 	~IMU();
 	
 	bool ConnectIMU();
-	//void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 	void getAsynchData();
-	void getNonAsyncData();
+	void setFilePath(std::string filePath);
 
 private:
 	std::string m_sensorPort;
@@ -32,6 +33,9 @@ private:
 	VnSensor m_vs;
 	BinaryOutputRegister m_bor;
 	bool m_print;
+	static std::ofstream* m_file;
+	friend void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
+	std::string m_filePath;
 };
 
 #endif

@@ -39,6 +39,7 @@ int main() {
 	//If true, IMU data will print to the screen
 	bool print = true;
 	IMU imu(defaultSensorPort, defaultBaudeRate, print);
+	imu.ConnectIMU();
 	
 
 	// Open the pxd opject
@@ -54,10 +55,12 @@ int main() {
 	std::cout << "Opened frame grabber\n";
 
 	// Open context cameras
-	ContextCamera context1("C:/FINIS/testing", "context");
+	ContextCamera context1(0, "C:/FINIS/testing", "context1");
+	ContextCamera context2(1, "C:/FINIS/testing", "context2");
 
 	// Add context cameras to PXD object
-	pxd.addContextCamera(context1);
+	pxd.setContextCamera1(context1);
+	pxd.setContextCamera2(context2);
 
 	/*
 	// Go live

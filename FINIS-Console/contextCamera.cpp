@@ -3,9 +3,9 @@
 ContextCamera::ContextCamera() {
 
 }
-ContextCamera::ContextCamera(std::string basePath, std::string camera)
+ContextCamera::ContextCamera(int camera_id, std::string basePath, std::string camera)
 {
-	cam.open(0);
+	cam.open(camera_id);
 
 	cam.set(cv::CAP_PROP_FRAME_WIDTH, 640);
 	cam.set(cv::CAP_PROP_FRAME_HEIGHT, 470);
@@ -33,7 +33,8 @@ int ContextCamera::snap() {
 
 	// Snap a picture
 	cam >> frame;
-	imwrite((filePath + "/" + std::to_string(folderNumber) + "/" + cameraName + std::to_string(frameIndex++) + ".tiff").c_str(), frame);
+	//std::cout << "Camera " << cameraName << " snapped a picture\n";
+	imwrite((filePath + "/" + std::to_string(folderNumber) + "/" + cameraName + "_" + ZeroPadString(frameIndex++) + ".tiff").c_str(), frame);
 	return 0;
 }
 
