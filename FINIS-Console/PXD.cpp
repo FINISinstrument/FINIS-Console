@@ -62,6 +62,8 @@ bool PXD::parseCommand(char* command) {
 
 	char * word;
 	word = strtok(command, " ");
+	std::cout << "command: " << command << "\n";
+	std::cout << "word: " << word << "\n";
 
 	// Check if first word is capture
 	if (word == "capture") {
@@ -82,7 +84,7 @@ bool PXD::parseCommand(char* command) {
 
 	// Check whether to record seconds
 	word = strtok(NULL, " ");
-	bool useSeconds = strcmp(word, "seconds");
+	bool useSeconds = (strcmp(word, "seconds") == 0);
 	
 	video(count, useSeconds);
 	
@@ -252,13 +254,11 @@ int PXD::video(int frameCount, bool useSeconds) {
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
 	// Spawn thread to record frames
-	std::thread recordThread(recordFrames, 1, useSeconds);
+	std::thread recordThread(recordFrames, 1);
 	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
 	// Save images, wait for record to finish
-	//std::thread saveThread(saveFrames, frameCount, 1);
-	//std::thread saveThread(saveFrames, 10, 1, true); // 10 seconds to save
-	std::thread saveThread(saveFrames, frameCount, 1, false); // frames to save
+	std::thread saveThread(saveFrames, frameCount, 1, useSeconds); // frames to save
 	std::cout << " waiting for record thread\n";
 	recordThread.join();
 	std::cout << " record thread joined\n";

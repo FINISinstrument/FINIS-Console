@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <time.h>
 #include <memory>
@@ -26,6 +27,40 @@
 
 //header files we have written
 #include "IMU.h"
+
+void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* imu, PXD* pxd) {
+	// Open the script file
+	std::ifstream script(scriptPath);
+	if (!script.is_open()) {
+		return;
+	}
+
+	// Loop through lines of file and execute commands
+	std::string line;
+	while (getline(script, line)) {
+		char* c_line = new char[line.size() + 1];
+		line.copy(c_line, line.size() + 1);
+		c_line[line.size()] = '\0';
+		char* identifier;
+
+		identifier = strtok(c_line, " ");
+
+		line.copy(c_line, line.size() + 1);
+		c_line[line.size()] = '\0';
+		
+		std::cout << "main, line: " << line << "\n";
+		std::cout << "main, identifier: " << identifier << "\n";
+		if ( strcmp(identifier, "shutter")==0 ) {
+			shutter->parseCommand(c_line);
+		}
+		else if ( strcmp(identifier, "capture") == 0 || strcmp(identifier, "collect") == 0 ) {
+			pxd->parseCommand(c_line);
+		}
+		delete c_line;
+	}
+
+	script.close();
+}
 
 int main() {
 	Vimba vimba = Vimba();
@@ -79,6 +114,7 @@ int main() {
 		std::cout << "3: Open shutter\n";
 		std::cout << "4: Close shutter\n";
 		std::cout << "5: Record stream\n";
+		std::cout << "6: Run script\n";
 		std::cout << "Enter a cmd:";
 		std::cin >> cmd;
 
@@ -109,6 +145,14 @@ int main() {
 				std::cin >> frameCount;
 				pxd.video(frameCount, true);
 				
+				break;
+			}
+			case 6: {
+				//std::cout << "Enter path to script: ";
+				std::string path;
+				//std::cin >> path;
+				path = "C:/FINIS/testing/scripts/script1.txt";
+				parseScript(path, &vimba, &shutter, &imu, &pxd);
 				break;
 			}
 			default: { //print out all the options for keystrokes

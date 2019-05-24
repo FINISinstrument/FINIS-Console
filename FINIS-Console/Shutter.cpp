@@ -14,6 +14,25 @@ Shutter::~Shutter() {
 	disconnectPort();
 }
 
+void Shutter::parseCommand(char* command) {
+	// Take a command from a script file, and do the action
+	// Valid commands are
+	// shutter open
+	// shutter close
+
+	int offset = 0;
+	char * word;
+	word = strtok(command, " ");
+	
+	// Get word of command
+	word = strtok(NULL, " ");
+	if (strcmp(word, "open") == 0) {
+		openShutter();
+	} else {
+		closeShutter();
+	}
+}
+
 void Shutter::openShutter() {
 	// If shutter open, don't open again
 	if (shutterOpen) {

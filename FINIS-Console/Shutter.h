@@ -11,6 +11,8 @@ class Shutter {
 		Shutter();
 		~Shutter();
 
+		void parseCommand(char* command);
+
 		void openShutter();
 		void closeShutter();
 
