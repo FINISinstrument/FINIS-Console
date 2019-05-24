@@ -7,8 +7,10 @@ ContextCamera::ContextCamera(int camera_id, std::string basePath, std::string ca
 {
 	cam.open(camera_id);
 
-	cam.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-	cam.set(cv::CAP_PROP_FRAME_HEIGHT, 470);
+	//cam.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+	cam.set(cv::CAP_PROP_FRAME_WIDTH, 320);
+	cam.set(cv::CAP_PROP_FRAME_HEIGHT, 240);
 	cam.set(cv::CAP_PROP_FPS, 30);
 
 	filePath = basePath;

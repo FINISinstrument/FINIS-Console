@@ -199,11 +199,11 @@ int PXD::video(int frameCount) {
 	std::cout << "intital decrement\n";
 	WaitForSingleObject(ghSemaphore, INFINITE);
 
-	context1_semaphore = CreateSemaphore(NULL, 1, 150, NULL);
+	context1_semaphore = CreateSemaphore(NULL, 1, 1, NULL);
 	std::cout << "intital decrement\n";
 	WaitForSingleObject(context1_semaphore, INFINITE);
 
-	context2_semaphore = CreateSemaphore(NULL, 1, 150, NULL);
+	context2_semaphore = CreateSemaphore(NULL, 1, 1, NULL);
 	std::cout << "intital decrement\n";
 	WaitForSingleObject(context2_semaphore, INFINITE);
 
