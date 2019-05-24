@@ -53,6 +53,42 @@ PXD::~PXD() {
 	}
 }
 
+bool PXD::parseCommand(char* command) {
+	// Take a command from a script file, and do the action
+	// Valid commands are
+	// collect <int> frames
+	// collect <int> seconds
+	// capture <image name>
+
+	char * word;
+	word = strtok(command, " ");
+
+	// Check if first word is capture
+	if (word == "capture") {
+		word = strtok(NULL, " ");
+		snap(word);
+		return true;
+	}
+
+	// Check for collection
+	if (word != "collect") {
+		return false;
+	}
+
+	// Get count to pass to record function
+	int count = 0;
+	word = strtok(NULL, " ");
+	count = std::stoi(word);
+
+	// Check whether to record seconds
+	word = strtok(NULL, " ");
+	bool useSeconds = strcmp(word, "seconds");
+	
+	video(count, useSeconds);
+	
+	return true;
+}
+
 int PXD::snap(std::string imageName) {
 	// Record single image
 	enable();
@@ -159,7 +195,7 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 	std::cout << "frameCount: " << frameCount << "\n";
 }
 
-int PXD::video(int frameCount) {
+int PXD::video(int frameCount, bool useSeconds) {
 	// Disable if live from a previous occurance or snap
 	if (isStreaming) {
 		pxd_goUnLive(1);
@@ -216,7 +252,7 @@ int PXD::video(int frameCount) {
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
 	// Spawn thread to record frames
-	std::thread recordThread(recordFrames, 1);
+	std::thread recordThread(recordFrames, 1, useSeconds);
 	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
 	// Save images, wait for record to finish

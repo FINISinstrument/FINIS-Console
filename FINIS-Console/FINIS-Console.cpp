@@ -107,7 +107,7 @@ int main() {
 				std::cout << "Enter frame count: ";
 				int frameCount;
 				std::cin >> frameCount;
-				pxd.video(frameCount);
+				pxd.video(frameCount, true);
 				
 				break;
 			}
