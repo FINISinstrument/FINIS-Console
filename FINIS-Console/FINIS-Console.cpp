@@ -6,6 +6,7 @@
 #include <string>
 #include <time.h>
 #include <memory>
+#include <stdlib.h>
 
 #include <windows.h>
 
@@ -50,6 +51,15 @@ void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* im
 		else if ( strcmp(c_line, "capture") == 0 || strcmp(c_line, "collect") == 0 ) {
 			pxd->parseCommand(line);
 		}
+		else if (strcmp(c_line, "sleep") == 0) {
+			c_line = strtok(NULL, " ");
+			int count = std::stoi(c_line);
+			//std::this_thread::sleep_for(std::chrono::milliseconds(count * 1000));
+			//std::sleep(1000 * count);
+			Sleep(1000 * count);
+		}
+
+
 		delete c_line;
 	}
 
