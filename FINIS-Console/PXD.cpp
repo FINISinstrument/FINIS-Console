@@ -53,27 +53,29 @@ PXD::~PXD() {
 	}
 }
 
-bool PXD::parseCommand(char* command) {
+bool PXD::parseCommand(std::string command) {
 	// Take a command from a script file, and do the action
 	// Valid commands are
 	// collect <int> frames
 	// collect <int> seconds
 	// capture <image name>
 
+	char* c_line = new char[command.size() + 1];
+	std::copy(command.begin(), command.end(), c_line);
+	c_line[command.size()] = '\0';
+
 	char * word;
-	word = strtok(command, " ");
-	std::cout << "command: " << command << "\n";
-	std::cout << "word: " << word << "\n";
+	word = strtok(c_line, " ");
 
 	// Check if first word is capture
-	if (word == "capture") {
+	if (strcmp(word, "capture") == 0) {
 		word = strtok(NULL, " ");
 		snap(word);
 		return true;
 	}
 
 	// Check for collection
-	if (word != "collect") {
+	if (strcmp(word, "collect") != 0) {
 		return false;
 	}
 
@@ -86,6 +88,8 @@ bool PXD::parseCommand(char* command) {
 	word = strtok(NULL, " ");
 	bool useSeconds = (strcmp(word, "seconds") == 0);
 	
+	std::cout << "count: " << count << "\tseconds: " << useSeconds << "\n";
+
 	video(count, useSeconds);
 	
 	return true;

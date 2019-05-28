@@ -39,22 +39,16 @@ void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* im
 	std::string line;
 	while (getline(script, line)) {
 		char* c_line = new char[line.size() + 1];
-		char* identifier = new char[line.size() + 1];
 		line.copy(c_line, line.size() + 1);
 		c_line[line.size()] = '\0';
-		line.copy(identifier, line.size() + 1);
-		identifier[line.size()] = '\0';
 
-		identifier = strtok(c_line, " ");
+		c_line = strtok(c_line, " ");
 
-		std::cout << "main, line: " << line << "\n";
-		std::cout << "main, c_line: " << c_line << "\n";
-		std::cout << "main, identifier: " << identifier << "\n";
-		if ( strcmp(identifier, "shutter")==0 ) {
-			shutter->parseCommand(c_line);
+		if ( strcmp(c_line, "shutter")==0 ) {
+			shutter->parseCommand(line);
 		}
-		else if ( strcmp(identifier, "capture") == 0 || strcmp(identifier, "collect") == 0 ) {
-			pxd->parseCommand(c_line);
+		else if ( strcmp(c_line, "capture") == 0 || strcmp(c_line, "collect") == 0 ) {
+			pxd->parseCommand(line);
 		}
 		delete c_line;
 	}

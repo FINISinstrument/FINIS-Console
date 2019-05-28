@@ -4,7 +4,7 @@
 
 Shutter::Shutter() {
 	portNumber = 7;
-	maxPortNumber = 12;
+	maxPortNumber = 20;
 
 	portConnected = false;
 	shutterOpen = false;
@@ -14,15 +14,19 @@ Shutter::~Shutter() {
 	disconnectPort();
 }
 
-void Shutter::parseCommand(char* command) {
+void Shutter::parseCommand(std::string command) {
 	// Take a command from a script file, and do the action
 	// Valid commands are
 	// shutter open
 	// shutter close
 
+	char* c_line = new char[command.size() + 1];
+	std::copy(command.begin(), command.end(), c_line);
+	c_line[command.size()] = '\0';
+
 	int offset = 0;
 	char * word;
-	word = strtok(command, " ");
+	word = strtok(c_line, " ");
 	
 	// Get word of command
 	word = strtok(NULL, " ");

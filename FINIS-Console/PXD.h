@@ -20,7 +20,7 @@ class PXD {
 
 		~PXD();
 
-		bool parseCommand(char* command);
+		bool parseCommand(std::string command);
 
 		int snap(std::string imageName);
 		int video(int frameCount, bool useSeconds);
