@@ -54,13 +54,18 @@ void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* im
 		else if (strcmp(c_line, "sleep") == 0) {
 			c_line = strtok(NULL, " ");
 			int count = std::stoi(c_line);
-			//std::this_thread::sleep_for(std::chrono::milliseconds(count * 1000));
-			//std::sleep(1000 * count);
 			Sleep(1000 * count);
 		}
 
-
-		delete c_line;
+		/*
+		std::cout << "C_Line: *" << c_line << "*\n";
+		if (c_line != NULL) {
+			std::cout << "Pre delete\n";
+			delete c_line;
+			std::cout << "Post delete\n";
+		}
+		std::cout << "Next command\n";
+		*/
 	}
 
 	script.close();
@@ -147,7 +152,7 @@ int main() {
 				std::cout << "Enter frame count: ";
 				int frameCount;
 				std::cin >> frameCount;
-				pxd.video(frameCount, true);
+				pxd.video(frameCount, false);
 				
 				break;
 			}

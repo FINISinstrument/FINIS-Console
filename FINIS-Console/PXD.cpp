@@ -12,8 +12,9 @@
 int PXD::halfBufferSize = 200;
 std::string PXD::folderPath = "C:/Users/FINIS/Desktop/";
 uint32_t* PXD::frameTimestamps = new uint32_t[PXD::halfBufferSize * 2];
-std::atomic<bool> PXD::finishedWithVideo = false;
-std::atomic<bool> PXD::finishedWithContext = false;
+std::atomic<bool> PXD::finishedWithRecording = false;
+std::atomic<bool> PXD::finishedWithSaving    = false;
+std::atomic<bool> PXD::finishedWithContext   = false;
 bool PXD::firstHandleRun = true;
 HANDLE PXD::ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
 HANDLE PXD::context1_semaphore = CreateSemaphore(NULL, 1, 1, NULL);
@@ -113,13 +114,12 @@ void PXD::recordFrames(int videoPeriod) {
 	int i = 0;
 	uint32_t time;
 	uint32_t last_time;
-	bool first = true;
 
 	pxd_goLiveSeq(1, 1, 400, 1, 0, videoPeriod);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
 
 	last_time = 0;
-	while (!finishedWithVideo) {
+	while (!finishedWithRecording || (i % 200 != 0)) {
 		int workingIndex = i % 400;
 		// Put timestamp into buffer
 		time = pxd_capturedSysTicks(1);
@@ -130,16 +130,22 @@ void PXD::recordFrames(int videoPeriod) {
 			last_time = time;
 			i++;
 
-			ReleaseSemaphore(context1_semaphore, 1, NULL);
-			ReleaseSemaphore(context2_semaphore, 1, NULL);
-
 			// Check for saving from buffer
 			if (i % 200 == 0) {
 				ReleaseSemaphore(ghSemaphore, 1, NULL);
+				//finishedWithSaving = true;
 			}
+
+			ReleaseSemaphore(context1_semaphore, 1, NULL);
+			ReleaseSemaphore(context2_semaphore, 1, NULL);
 		}
 	}
+	finishedWithSaving = true;
 	finishedWithContext = true;
+
+	ReleaseSemaphore(context1_semaphore, 1, NULL);
+	ReleaseSemaphore(context2_semaphore, 1, NULL);
+
 	pxd_goUnLive(1);
 	/*for (int i = 0; i < 400; i++) {
 		std::cout << "  I: " << i << "\tTime: " << frameTimestamps[i] << "\n";
@@ -147,16 +153,17 @@ void PXD::recordFrames(int videoPeriod) {
 }
 
 void PXD::contextOneSnapper() {
+	WaitForSingleObject(context1_semaphore, INFINITE);
 	while (!finishedWithContext) {
-		//std::cout << "Watigin for context 1\n";
-		//WaitForSingleObject(context1_semaphore, INFINITE);
 		contextCamera_1.snap();
+		WaitForSingleObject(context1_semaphore, INFINITE);
 	}
 }
 void PXD::contextTwoSnapper() {
+	WaitForSingleObject(context2_semaphore, INFINITE);
 	while (!finishedWithContext) {
-		//WaitForSingleObject(context2_semaphore, INFINITE);
 		contextCamera_2.snap();
+		WaitForSingleObject(context2_semaphore, INFINITE);
 	}
 }
 
@@ -172,12 +179,21 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
 	// Loop until we have hit frameCount
-	while ((frameCount < count && !secondsCount) || (duration < count && secondsCount)) {
+	//while ((frameCount < count && !secondsCount) || (duration < count && secondsCount)) {
+	//while (!finishedWithVideo) {
+	while (!finishedWithSaving) {
 		firstHalf = 1 - firstHalf;
 		// Wait for semaphore
 		std::cout << "Waiting for semaphore\n";
 		WaitForSingleObject(ghSemaphore, INFINITE); // Changing to be noninfinite
 		std::cout << "got semaphore\n";
+
+		// Update reference metrics
+		t2 = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+		if ((frameCount+200 >= count && !secondsCount) || (duration >= count && secondsCount)) {
+			finishedWithRecording = true;
+		}
 
 		// Set subfolder value
 		folderNumber = 1 + frameCount / FRAMES_IN_FOLDER;
@@ -191,12 +207,9 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 			// Save frame timestamp
 			*f_irTimestamps << frameCount + i << "\t" << frameTimestamps[(firstHalf * 200) + i] << "\n";
 		}
-		// Update reference metrics
-		t2 = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+		// Update frame count
 		frameCount += halfBufferSize;
 	}
-	finishedWithVideo = true;
 	// Should be done recording
 	std::cout << "frameCount: " << frameCount << "\n";
 }
@@ -209,7 +222,9 @@ int PXD::video(int frameCount, bool useSeconds) {
 	}
 
 	// Reset finished flag
-	finishedWithVideo = false;
+	finishedWithRecording = false;
+	finishedWithSaving = false;
+	finishedWithContext = false;
 
 	// Clear buffer of timestamps
 	for (int i = 0; i < this->halfBufferSize * 2; i++) {
@@ -229,6 +244,8 @@ int PXD::video(int frameCount, bool useSeconds) {
 	}
 	contextCamera_1.setFilePath(folderPath);
 	contextCamera_2.setFilePath(folderPath);
+	contextCamera_1.setDivisor(1);
+	contextCamera_2.setDivisor(1);
 	
 	// Create semaphore object for syncronizing saving
 	if (firstHandleRun) {
@@ -249,22 +266,22 @@ int PXD::video(int frameCount, bool useSeconds) {
 	std::cout << "intital decrement\n";
 	WaitForSingleObject(context2_semaphore, INFINITE);
 
-	// Create the file to store the IR camera timestamps
-	f_irTimestamps = new std::ofstream((folderPath + "/ir_timestamps.txt").c_str());
-
 	std::thread context1(contextOneSnapper);
 	std::thread context2(contextTwoSnapper);
+
+	// Create the file to store the IR camera timestamps
+	f_irTimestamps = new std::ofstream((folderPath + "/ir_timestamps.txt").c_str());
 
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
 	// Spawn thread to record frames
 	std::thread recordThread(recordFrames, 1);
-	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
 	// Save images, wait for record to finish
 	std::thread saveThread(saveFrames, frameCount, 1, useSeconds); // frames to save
 	std::cout << " waiting for record thread\n";
 	recordThread.join();
+	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 	std::cout << " record thread joined\n";
 
 	// Getting time to record frames

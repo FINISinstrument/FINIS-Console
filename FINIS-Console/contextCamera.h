@@ -18,6 +18,7 @@ public:
 
 	void setFilePath(std::string path) { filePath = path; frameIndex = 0; folderNumber = 0; }
 	void setCameraName(std::string name) { cameraName = name; }
+	void setDivisor(int div) { divisor = div;  }
 
 	int snap();
 	int recordFrames(int count);
@@ -30,4 +31,7 @@ private:
 	int frameIndex;
 
 	int folderNumber;
+
+	int divisor;
+	int divisor_index;
 };

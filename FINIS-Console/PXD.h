@@ -58,7 +58,8 @@ class PXD {
 		int loopCount;
 		static std::string folderPath;
 
-		static std::atomic<bool> finishedWithVideo;
+		static std::atomic<bool> finishedWithRecording;
+		static std::atomic<bool> finishedWithSaving;
 		static std::atomic<bool> finishedWithContext;
 
 		std::string baseImagePath = "C:/FINIS/testing/Image/";
