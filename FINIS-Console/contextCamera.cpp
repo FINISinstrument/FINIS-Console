@@ -13,7 +13,8 @@ ContextCamera::ContextCamera(int camera_id, std::string basePath, std::string ca
 	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 240);
 	cam.set(cv::CAP_PROP_FRAME_WIDTH, 160);
 	cam.set(cv::CAP_PROP_FRAME_HEIGHT, 120);
-	cam.set(cv::CAP_PROP_FPS, 30);
+	//cam.set(cv::CAP_PROP_FPS, 30);
+	cam.set(cv::CAP_PROP_FPS, 35);
 
 	filePath = basePath;
 	frameIndex = 0;
