@@ -137,7 +137,7 @@ int main() {
 				break;
 			}
 			case 2: {
-				imu.getAsynchData();
+				imu.debugGetAsynchData();
 				break;
 			}
 			case 3: {
@@ -152,7 +152,12 @@ int main() {
 				std::cout << "Enter frame count: ";
 				int frameCount;
 				std::cin >> frameCount;
+
+				std::string filePath = pxd.createFolder();
+				imu.setFilePath(filePath);
+				imu.startAsynchData();
 				pxd.video(frameCount, false);
+				imu.stopAsynchData();
 				
 				break;
 			}

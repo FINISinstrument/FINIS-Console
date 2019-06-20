@@ -49,11 +49,8 @@ bool IMU::ConnectIMU() { //returns true if the sensor succesfully connects
 	}
 	return false;
 }
-void IMU::setFilePath(std::string filename) {
-	m_filePath = filename;
-}
 
-void IMU::getAsynchData() {
+void IMU::debugGetAsynchData() {
 	time_t t = time(NULL);
 	tm* timePtr = localtime(&t);
 	std::string curDate = m_filePath + std::to_string(timePtr->tm_mon) + "-" + std::to_string(timePtr->tm_mday) + "-" + std::to_string((timePtr->tm_year) + 1900) + "-" + std::to_string(timePtr->tm_hour) + "-" + std::to_string(timePtr->tm_min) + ".txt";
@@ -73,6 +70,22 @@ void IMU::getAsynchData() {
 	m_file->close();
 }
 
+void IMU::startAsynchData() {
+	time_t t = time(NULL);
+	tm* timePtr = localtime(&t);
+
+	m_file = new std::ofstream((m_filePath + "/imu_data.txt").c_str());
+	if (!m_file) {
+		std::cout << "file not open\n";
+	}
+	m_vs.writeBinaryOutput1(m_bor);
+	m_vs.registerAsyncPacketReceivedHandler(NULL, asciiOrBinaryAsyncMessageReceived);
+}
+
+void IMU::stopAsynchData() {
+	m_vs.unregisterAsyncPacketReceivedHandler();
+	m_file->close();
+}
 
 void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index) {
 	if (p.type() == Packet::TYPE_ASCII && p.determineAsciiAsyncType() == VNYPR) {

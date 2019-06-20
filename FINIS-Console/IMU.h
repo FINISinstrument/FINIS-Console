@@ -24,8 +24,12 @@ public:
 	~IMU();
 	
 	bool ConnectIMU();
-	void getAsynchData();
-	void setFilePath(std::string filePath);
+	void debugGetAsynchData();
+	void startAsynchData();
+	void stopAsynchData();
+	void setFilePath(std::string filePath) {
+		m_filePath = filePath;
+	};
 
 private:
 	std::string m_sensorPort;

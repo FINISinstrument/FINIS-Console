@@ -10,6 +10,7 @@
 #include "XCLIB/xcliball.h"
 
 #include "contextCamera.h"
+#include "IMU.h"
 
 #include "constants.h"
 
@@ -28,12 +29,13 @@ class PXD {
 		void addContextCamera(ContextCamera &camera);
 		void setContextCamera1(ContextCamera &camera);
 		void setContextCamera2(ContextCamera &camera);
+		void setIMU(IMU *imu);
 
 		std::string getFolderPath();
+		std::string createFolder();
+		void getDateTime();
 	private:
 		int openPXD();
-
-		void getDateTime();
 
 		static void recordFrames(int videoPeriod);
 		static void saveFrames(int count, int videoPeriod, bool secondsCount);

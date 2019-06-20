@@ -271,12 +271,8 @@ int PXD::video(int frameCount, bool useSeconds) {
 		frameTimestamps[i] = 0;
 	}
 
-	// Get directory to save images to
-	getDateTime();
-	folderPath = baseVideoPath + dateTime;
-	// Create directory
-	CreateDirectoryA(folderPath.c_str(), NULL);
-	std::cout << GetLastError() << "\n";
+	// Don't need to create folder, it will be created from FINIS-Console
+	// TODO this functionality will need to be refactored during the script testing
 
 	// Update context cameras working directory
 	for (int i = 0; i < contextCameras.size(); i++) {
@@ -284,6 +280,7 @@ int PXD::video(int frameCount, bool useSeconds) {
 	}
 	contextCamera_1.setFilePath(folderPath);
 	contextCamera_2.setFilePath(folderPath);
+	std::cout << "Folder path: *" << folderPath << "*\n";
 	contextCamera_1.setDivisor(2);
 	contextCamera_2.setDivisor(2);
 	
@@ -368,6 +365,17 @@ void PXD::setContextCamera1(ContextCamera &camera) {
 }
 void PXD::setContextCamera2(ContextCamera &camera) {
 	contextCamera_2 = camera;
+}
+
+std::string PXD::createFolder() {
+	// Get directory to save images to
+	getDateTime();
+	folderPath = baseVideoPath + dateTime;
+	// Create directory
+	CreateDirectoryA(folderPath.c_str(), NULL);
+	std::cout << GetLastError() << "\n";
+
+	return folderPath;
 }
 
 std::string PXD::getFolderPath() {
