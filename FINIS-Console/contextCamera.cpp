@@ -7,14 +7,13 @@ ContextCamera::ContextCamera(int camera_id, std::string basePath, std::string ca
 {
 	cam.open(camera_id);
 
-	//cam.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+	cam.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+	cam.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
 	//cam.set(cv::CAP_PROP_FRAME_WIDTH, 320);
 	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 240);
-	cam.set(cv::CAP_PROP_FRAME_WIDTH, 160);
-	cam.set(cv::CAP_PROP_FRAME_HEIGHT, 120);
-	//cam.set(cv::CAP_PROP_FPS, 30);
-	cam.set(cv::CAP_PROP_FPS, 35);
+	//cam.set(cv::CAP_PROP_FRAME_WIDTH, 160);
+	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 120);
+	cam.set(cv::CAP_PROP_FPS, 30);
 
 	filePath = basePath;
 	frameIndex = 0;
@@ -46,7 +45,7 @@ int ContextCamera::snap() {
 		imwrite((filePath + "/" + std::to_string(folderNumber) + "/" + cameraName + "_" + ZeroPadString(frameIndex++) + ".tiff").c_str(), frame);
 		divisor_index = 0;
 	}
-	return 0;
+	return divisor_index;
 }
 
 int ContextCamera::recordFrames(int count) {

@@ -81,4 +81,6 @@ class PXD {
 		static HANDLE context2_semaphore;
 
 		static std::ofstream* f_irTimestamps;
+		static std::ofstream* f_context1Timestamps;
+		static std::ofstream* f_context2Timestamps;
 };

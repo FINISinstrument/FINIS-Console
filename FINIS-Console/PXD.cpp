@@ -23,6 +23,8 @@ std::vector<ContextCamera> PXD::contextCameras = std::vector<ContextCamera>();
 ContextCamera PXD::contextCamera_1 = ContextCamera();
 ContextCamera PXD::contextCamera_2 = ContextCamera();
 std::ofstream* PXD::f_irTimestamps = NULL;
+std::ofstream* PXD::f_context1Timestamps = NULL;
+std::ofstream* PXD::f_context2Timestamps = NULL;
 
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
 {
@@ -153,16 +155,54 @@ void PXD::recordFrames(int videoPeriod) {
 }
 
 void PXD::contextOneSnapper() {
+	auto now = std::chrono::high_resolution_clock::now();
+	auto last = now;
+	auto duration = now.time_since_epoch();
+	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+	int div = 0;
+
 	WaitForSingleObject(context1_semaphore, INFINITE);
 	while (!finishedWithContext) {
-		contextCamera_1.snap();
+		div = contextCamera_1.snap();
+		// Save frame timestamp
+		if (div == 0) {
+			last = now;
+			now = std::chrono::high_resolution_clock::now();
+			duration = now.time_since_epoch();
+			millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+			*f_context1Timestamps << millis << "\t";
+			duration = now - last;
+			millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+			*f_context1Timestamps << millis << "\n";
+		}
+
 		WaitForSingleObject(context1_semaphore, INFINITE);
 	}
 }
 void PXD::contextTwoSnapper() {
+	auto now = std::chrono::high_resolution_clock::now();
+	auto last = now;
+	auto duration = now.time_since_epoch();	
+	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+	int div = 0;
+
 	WaitForSingleObject(context2_semaphore, INFINITE);
 	while (!finishedWithContext) {
-		contextCamera_2.snap();
+		div = contextCamera_2.snap();
+		// Save frame timestamp
+		if (div == 0) {
+			last = now;
+			now = std::chrono::high_resolution_clock::now();
+			duration = now.time_since_epoch();
+			millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+			*f_context2Timestamps << millis << "\t";
+			duration = now - last;
+			millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+			*f_context2Timestamps << millis << "\n";
+		}
+
 		WaitForSingleObject(context2_semaphore, INFINITE);
 	}
 }
@@ -244,8 +284,8 @@ int PXD::video(int frameCount, bool useSeconds) {
 	}
 	contextCamera_1.setFilePath(folderPath);
 	contextCamera_2.setFilePath(folderPath);
-	contextCamera_1.setDivisor(1);
-	contextCamera_2.setDivisor(1);
+	contextCamera_1.setDivisor(2);
+	contextCamera_2.setDivisor(2);
 	
 	// Create semaphore object for syncronizing saving
 	if (firstHandleRun) {
@@ -271,6 +311,8 @@ int PXD::video(int frameCount, bool useSeconds) {
 
 	// Create the file to store the IR camera timestamps
 	f_irTimestamps = new std::ofstream((folderPath + "/ir_timestamps.txt").c_str());
+	f_context1Timestamps = new std::ofstream((folderPath + "/context1_timestamps.txt").c_str());
+	f_context2Timestamps = new std::ofstream((folderPath + "/context2_timestamps.txt").c_str());
 
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
@@ -309,7 +351,11 @@ int PXD::video(int frameCount, bool useSeconds) {
 
 	// Close files
 	f_irTimestamps->close();
+	f_context1Timestamps->close();
+	f_context2Timestamps->close();
 	delete f_irTimestamps;
+	delete f_context1Timestamps;
+	delete f_context2Timestamps;
 
 	return 0;
 }

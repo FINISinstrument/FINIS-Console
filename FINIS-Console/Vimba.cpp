@@ -40,7 +40,9 @@ bool Vimba::startCamera() {
 	// Set features for the camera
 	sys.OpenCameraByID("DEV_64AA2C448F1F2349", VmbAccessModeFull, camera);
 	camera->GetFeatureByName("ExposureTime", feature);
-	feature->SetValue(30000.0);
+	//feature->SetValue(30000.0);
+	//feature->SetValue(33330.0);
+	feature->SetValue(33334.0);
 	camera->GetFeatureByName("AcquisitionFrameRate", feature);
 	feature->SetValue(30.0);
 	camera->GetFeatureByName("SensorGain", feature);

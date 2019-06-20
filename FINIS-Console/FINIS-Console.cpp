@@ -95,7 +95,7 @@ int main() {
 	}
 	Sleep(1000);
 	*/
-	PXD pxd ("C:/FINIS/testing");
+	PXD pxd ("C:/FINIS/testing", false);
 	std::cout << "Opened frame grabber\n";
 
 	// Open context cameras
