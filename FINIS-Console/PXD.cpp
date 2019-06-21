@@ -281,8 +281,8 @@ int PXD::video(int frameCount, bool useSeconds) {
 	contextCamera_1.setFilePath(folderPath);
 	contextCamera_2.setFilePath(folderPath);
 	std::cout << "Folder path: *" << folderPath << "*\n";
-	contextCamera_1.setDivisor(2);
-	contextCamera_2.setDivisor(2);
+	contextCamera_1.setDivisor(1);
+	contextCamera_2.setDivisor(1);
 	
 	// Create semaphore object for syncronizing saving
 	if (firstHandleRun) {

@@ -9,6 +9,8 @@ ContextCamera::ContextCamera(int camera_id, std::string basePath, std::string ca
 
 	//cam.set(cv::CAP_PROP_FRAME_WIDTH, 640);
 	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+	//cam.set(cv::CAP_PROP_FRAME_WIDTH, 480);
+	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 360);
 	cam.set(cv::CAP_PROP_FRAME_WIDTH, 320);
 	cam.set(cv::CAP_PROP_FRAME_HEIGHT, 240);
 	//cam.set(cv::CAP_PROP_FRAME_WIDTH, 160);
@@ -42,7 +44,7 @@ int ContextCamera::snap() {
 		// Snap a picture
 		cam >> frame;
 		//std::cout << "Camera " << cameraName << " snapped a picture\n";
-		imwrite((filePath + "/" + std::to_string(folderNumber) + "/" + cameraName + "_" + ZeroPadString(frameIndex++) + ".tiff").c_str(), frame);
+		imwrite((filePath + "/" + std::to_string(folderNumber) + "/" + cameraName + "_" + ZeroPadString(frameIndex++) + ".tiff").c_str(), frame, tags);
 		divisor_index = 0;
 	}
 	return divisor_index;

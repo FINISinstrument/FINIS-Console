@@ -34,4 +34,7 @@ class ContextCamera {
 
 		int divisor;
 		int divisor_index;
+
+		//std::vector<int> tags = { TIFFTAG_COMPRESSION, COMPRESSION_NONE };
+		std::vector<int> tags = { 259, 1 };
 };
