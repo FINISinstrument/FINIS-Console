@@ -6,6 +6,9 @@
 #include <time.h>
 #include <memory>
 
+#include <iomanip>
+#include <sstream>
+
 #include <windows.h>
 
 // Shutter header
@@ -18,6 +21,12 @@
 
 //header files we have written
 #include "IMU.h"
+
+std::string ZeroPadString(int num, int size) {
+	std::ostringstream ss;
+	ss << std::setw(size) << std::setfill('0') << num;
+	return ss.str();
+}
 
 int main() {
 	Vimba vimba = Vimba();
@@ -83,25 +92,46 @@ int main() {
 				break;
 			}
 			case 5: {
-				std::string basePath = "C:/FINIS/calibration/";
-				int minimum = 1000; // Measured in microseconds
-				int maximum = 33000; // Measured in microseconds
-				int stepSize = 1000; // Meausred in microseconds
-				int frameCount = 10; // Frames to capture per run
-				pxd_goUnLive(1);
-				for (int i = minimum; i <= maximum; i += stepSize) {
-					std::cout << "Aquiring at " << i << " microsecond exposure\n";
-					// Change exposure
-					vimba.updateExposure(i);
-					// Take image
-					std::cout << "Starting capture\n";
-					pxd_goLiveSeq(1, 1, 401, 1, frameCount, 1);
-					// Wait for completion
-					while (pxd_goneLive(1, 0)) { Sleep(0); }
-					// Save images
-					std::cout << "Saving images\n";
-					for (int j = 1; j <= frameCount; j++) {
-						pxd_saveTiff(1, (basePath + std::to_string(i) + "_" + std::to_string(j) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
+				std::cin.ignore();
+				std::string gasses [2] = {"Methane", "Nitrogen"};
+				std::string cellLengths[3] = {"10.16cm", "25cm", "50cm"};
+
+				// Loop through gasses
+				for (int i = 0; i < 2; i++) {
+					std::string gasPath = "C:/FINIS/calibration/" + gasses[i] + "/";
+					// Attemp to create subfolder
+					CreateDirectoryA((gasPath).c_str(), NULL);
+					// Loop through test cells
+					for (int j = 0; j < 3; j++) {
+						std::string cellPath = gasPath + cellLengths[j] + "/";
+						// Attemp to create subfolder
+						CreateDirectoryA((cellPath).c_str(), NULL);
+						std::cout << "BasePath: *" << cellPath << "*\n";
+						int minimum = 1000; // Measured in microseconds
+						int maximum = 33000; // Measured in microseconds
+						int stepSize = 1000; // Meausred in microseconds
+						int frameCount = 10; // Frames to capture per run
+						pxd_goUnLive(1);
+
+						// Wait for user input to change cells
+						std::cout << "Beginning calibration of " << gasses[i] << " in " << cellLengths[j] << " cell. Press Enter to begin calibration...";
+						std::cin.ignore();
+
+						for (int i = minimum; i <= maximum; i += stepSize) {
+							std::cout << "Aquiring at " << i << " microsecond exposure\n";
+							// Change exposure
+							vimba.updateExposure(i);
+							// Take image
+							std::cout << "Starting capture\n";
+							pxd_goLiveSeq(1, 1, 401, 1, frameCount, 1);
+							// Wait for completion
+							while (pxd_goneLive(1, 0)) { Sleep(0); }
+							// Save images
+							std::cout << "Saving images\n";
+							for (int j = 1; j <= frameCount; j++) {
+								pxd_saveTiff(1, (cellPath + ZeroPadString(i, 5) + "_" + ZeroPadString(j, 2) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
+							}
+						}
 					}
 				}
 				pxd_goLive(1, 1);
