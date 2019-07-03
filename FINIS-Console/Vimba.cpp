@@ -42,8 +42,10 @@ bool Vimba::startCamera() {
 	camera->GetFeatureByName("ExposureTime", feature);
 	//feature->SetValue(30000.0);
 	//feature->SetValue(33330.0);
-	feature->SetValue(33334.0);
+	//feature->SetValue(33334.0);
+	feature->SetValue(8000.0);
 	camera->GetFeatureByName("AcquisitionFrameRate", feature);
+	//feature->SetValue(30.0);
 	feature->SetValue(30.0);
 	camera->GetFeatureByName("SensorGain", feature);
 	feature->SetValue("Gain1");

@@ -117,7 +117,7 @@ void PXD::recordFrames(int videoPeriod) {
 	uint32_t time;
 	uint32_t last_time;
 
-	pxd_goLiveSeq(1, 1, 400, 1, 0, videoPeriod);
+	pxd_goLiveSeq(1, 1, 401, 1, 0, videoPeriod);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
 
 	last_time = 0;
@@ -155,6 +155,7 @@ void PXD::recordFrames(int videoPeriod) {
 }
 
 void PXD::contextOneSnapper() {
+	
 	auto now = std::chrono::high_resolution_clock::now();
 	auto last = now;
 	auto duration = now.time_since_epoch();
@@ -179,8 +180,10 @@ void PXD::contextOneSnapper() {
 
 		WaitForSingleObject(context1_semaphore, INFINITE);
 	}
+	
 }
 void PXD::contextTwoSnapper() {
+	/*
 	auto now = std::chrono::high_resolution_clock::now();
 	auto last = now;
 	auto duration = now.time_since_epoch();	
@@ -205,6 +208,7 @@ void PXD::contextTwoSnapper() {
 
 		WaitForSingleObject(context2_semaphore, INFINITE);
 	}
+	*/
 }
 
 void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
@@ -230,7 +234,7 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 
 		// Update reference metrics
 		t2 = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+		duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
 		if ((frameCount+200 >= count && !secondsCount) || (duration >= count && secondsCount)) {
 			finishedWithRecording = true;
 		}

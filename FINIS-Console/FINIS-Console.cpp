@@ -124,7 +124,8 @@ int main() {
 		std::cout << "4: Close shutter\n";
 		std::cout << "5: Record stream\n";
 		std::cout << "6: Run script\n";
-		std::cout << "Enter a cmd:";
+		std::cout << "7: Calibration run\n";
+		std::cout << "Enter a cmd:";;
 		std::cin >> cmd;
 
 		switch (cmd) {
@@ -154,10 +155,10 @@ int main() {
 				std::cin >> frameCount;
 
 				std::string filePath = pxd.createFolder();
-				imu.setFilePath(filePath);
-				imu.startAsynchData();
+				//imu.setFilePath(filePath);
+				//imu.startAsynchData();
 				pxd.video(frameCount, false);
-				imu.stopAsynchData();
+				//imu.stopAsynchData();
 				
 				break;
 			}
@@ -167,6 +168,41 @@ int main() {
 				//std::cin >> path;
 				path = "C:/FINIS/testing/scripts/script1.txt";
 				parseScript(path, &vimba, &shutter, &imu, &pxd);
+				break;
+			}
+			case 7: {
+				std::string location;
+				std::string speed;
+				std::string trial;
+				int timeToRecord;
+
+				std::cout << "Enter location: ";
+				std::cin >> location;
+				std::cout << "Enter speed: ";
+				std::cin >> speed;
+				std::cout << "Enter trial number: ";
+				std::cin >> trial;
+				std::cout << "Enter time to record (in seconds): ";
+				std::cin >> timeToRecord;
+
+				std::string filePath = pxd.createFolder();
+				imu.setFilePath(filePath);
+
+				std::cout << "Press enter to begin...";
+				std::cin.ignore();
+				std::cin.ignore();
+
+				imu.startAsynchData();
+				pxd.video(timeToRecord, true);
+				imu.stopAsynchData();
+
+				// Create file for logging the trial data to
+				std::ofstream loggerFile = std::ofstream((filePath + "/trial_data.txt").c_str());
+				loggerFile << "Location: " << location << "\n";
+				loggerFile << "Speed:    " << speed << "\n";
+				loggerFile << "Trial No: " << trial << "\n";
+				loggerFile << "Time recording: " << timeToRecord << "\n";
+
 				break;
 			}
 			default: { //print out all the options for keystrokes
