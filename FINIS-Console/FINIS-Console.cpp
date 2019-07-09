@@ -180,6 +180,7 @@ int main() {
 			case 7: {
 				std::string location;
 				std::string speed;
+				std::string distance;
 				std::string trial;
 				int timeToRecord;
 
@@ -187,6 +188,8 @@ int main() {
 				std::cin >> location;
 				std::cout << "Enter speed: ";
 				std::cin >> speed;
+				std::cout << "Enter distance to scene: ";
+				std::cin >> distance;
 				std::cout << "Enter trial number: ";
 				std::cin >> trial;
 				std::cout << "Enter time to record (in seconds): ";
@@ -207,6 +210,7 @@ int main() {
 				std::ofstream loggerFile = std::ofstream((filePath + "/trial_data.txt").c_str());
 				loggerFile << "Location: " << location << "\n";
 				loggerFile << "Speed:    " << speed << "\n";
+				loggerFile << "Distance: " << distance << "\n";
 				loggerFile << "Trial No: " << trial << "\n";
 				loggerFile << "Time recording: " << timeToRecord << "\n";
 

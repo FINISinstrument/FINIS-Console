@@ -17,4 +17,5 @@ class Vimba {
 		AVT::VmbAPI::CameraPtrVector cameras;
 		AVT::VmbAPI::CameraPtr camera;
 		AVT::VmbAPI::FeaturePtr feature;
+		bool cameraConnected;
 };
