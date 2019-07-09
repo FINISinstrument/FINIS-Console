@@ -29,6 +29,12 @@
 //header files we have written
 #include "IMU.h"
 
+std::string ZeroPadString(int num, int size) {
+	std::ostringstream ss;
+	ss << std::setw(size) << std::setfill('0') << num;
+	return ss.str();
+}
+
 void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* imu, PXD* pxd) {
 	// Open the script file
 	std::ifstream script(scriptPath);
@@ -125,6 +131,7 @@ int main() {
 		std::cout << "5: Record stream\n";
 		std::cout << "6: Run script\n";
 		std::cout << "7: Calibration run\n";
+		std::cout << "8: Flat field test\n";
 		std::cout << "Enter a cmd:";;
 		std::cin >> cmd;
 
@@ -155,10 +162,10 @@ int main() {
 				std::cin >> frameCount;
 
 				std::string filePath = pxd.createFolder();
-				//imu.setFilePath(filePath);
-				//imu.startAsynchData();
+				imu.setFilePath(filePath);
+				imu.startAsynchData();
 				pxd.video(frameCount, false);
-				//imu.stopAsynchData();
+				imu.stopAsynchData();
 				
 				break;
 			}
@@ -205,18 +212,59 @@ int main() {
 
 				break;
 			}
+			case 8: {
+				std::cin.ignore();
+				std::string gasses[2] = { "Methane", "Nitrogen" };
+				std::string cellLengths[3] = { "10.16cm", "25cm", "50cm" };
+
+				// Loop through gasses
+				for (int i = 0; i < 2; i++) {
+					std::string gasPath = "C:/FINIS/calibration/" + gasses[i] + "/";
+					// Attemp to create subfolder
+					CreateDirectoryA((gasPath).c_str(), NULL);
+					// Loop through test cells
+					for (int j = 0; j < 3; j++) {
+						std::string cellPath = gasPath + cellLengths[j] + "/";
+						// Attemp to create subfolder
+						CreateDirectoryA((cellPath).c_str(), NULL);
+						std::cout << "BasePath: *" << cellPath << "*\n";
+						int minimum = 1000; // Measured in microseconds
+						int maximum = 33000; // Measured in microseconds
+						int stepSize = 1000; // Meausred in microseconds
+						int frameCount = 10; // Frames to capture per run
+						pxd_goUnLive(1);
+
+						// Wait for user input to change cells
+						std::cout << "Beginning calibration of " << gasses[i] << " in " << cellLengths[j] << " cell. Press Enter to begin calibration...";
+						std::cin.ignore();
+
+						for (int i = minimum; i <= maximum; i += stepSize) {
+							std::cout << "Aquiring at " << i << " microsecond exposure\n";
+							// Change exposure
+							vimba.updateExposure(i);
+							// Take image
+							std::cout << "Starting capture\n";
+							pxd_goLiveSeq(1, 1, 401, 1, frameCount, 1);
+							// Wait for completion
+							while (pxd_goneLive(1, 0)) { Sleep(0); }
+							// Save images
+							std::cout << "Saving images\n";
+							for (int j = 1; j <= frameCount; j++) {
+								pxd_saveTiff(1, (cellPath + ZeroPadString(i, 5) + "_" + ZeroPadString(j, 2) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
+							}
+						}
+					}
+				}
+				pxd_goLive(1, 1);
+				break;
+			}
 			default: { //print out all the options for keystrokes
 				std::cout << "Not a valid argument type\n";
 
 				break;
 			}
 		}
-
-		// Disconnect the IMU
-		//imu.~IMU();
 	} // End while
-	// Close the pxd object
-	//pxd_PIXCIclose();
 	std::cout << "Hello World!\n";
 
 }

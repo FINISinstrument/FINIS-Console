@@ -47,6 +47,10 @@ bool Vimba::startCamera() {
 	camera->GetFeatureByName("AcquisitionFrameRate", feature);
 	//feature->SetValue(30.0);
 	feature->SetValue(30.0);
+
+	camera->GetFeatureByName("TriggerSource", feature);
+	feature->SetValue("FixedRate");
+
 	camera->GetFeatureByName("SensorGain", feature);
 	feature->SetValue("Gain1");
 	camera->GetFeatureByName("SensorTemperatureSetpointValue", feature);
@@ -57,4 +61,13 @@ bool Vimba::startCamera() {
 	feature->RunCommand();
 
 	return true;
+}
+
+void Vimba::updateExposure(double exposure) {
+	//camera->GetFeatureByName("AcquisitionStop", feature);
+	//feature->RunCommand();
+	camera->GetFeatureByName("ExposureTime", feature);
+	feature->SetValue(exposure);
+	//camera->GetFeatureByName("AcquisitionStart", feature);
+	//feature->RunCommand();
 }

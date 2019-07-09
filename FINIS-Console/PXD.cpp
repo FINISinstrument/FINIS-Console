@@ -183,7 +183,6 @@ void PXD::contextOneSnapper() {
 	
 }
 void PXD::contextTwoSnapper() {
-	/*
 	auto now = std::chrono::high_resolution_clock::now();
 	auto last = now;
 	auto duration = now.time_since_epoch();	
@@ -208,7 +207,6 @@ void PXD::contextTwoSnapper() {
 
 		WaitForSingleObject(context2_semaphore, INFINITE);
 	}
-	*/
 }
 
 void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
