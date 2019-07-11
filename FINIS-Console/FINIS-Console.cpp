@@ -91,16 +91,6 @@ int main() {
 	IMU imu(defaultSensorPort, defaultBaudeRate, print);
 	imu.ConnectIMU();
 	
-
-	// Open the pxd opject
-	/*
-	std::cout << "Opening frame grabber...\n";
-	int openError = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup16Bit30Hz.fmt");
-	if (openError < 0) {
-		printf("error: %s\n", pxd_mesgErrorCode(openError));
-	}
-	Sleep(1000);
-	*/
 	PXD pxd ("C:/FINIS/testing", false);
 	std::cout << "Opened frame grabber\n";
 
@@ -111,13 +101,6 @@ int main() {
 	// Add context cameras to PXD object
 	pxd.setContextCamera1(context1);
 	pxd.setContextCamera2(context2);
-
-	/*
-	// Go live
-	pxd_goLive(1, 1);
-	while (!pxd_goneLive(1,0)) { Sleep(0); }
-	std::cout << "Gone live\n";
-	*/
 
 	int cmd;
 	bool done = false;
