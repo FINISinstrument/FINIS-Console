@@ -371,7 +371,7 @@ void PXD::setContextCamera2(ContextCamera &camera) {
 
 std::string PXD::createFolder() {
 	// Get directory to save images to
-	getDateTime();
+	dateTime = getDateTime();
 	folderPath = baseVideoPath + dateTime;
 	// Create directory
 	CreateDirectoryA(folderPath.c_str(), NULL);
@@ -385,41 +385,7 @@ std::string PXD::getFolderPath() {
 }
 
 int PXD::openPXD() {
-	int error;
-	if (isThirtyFPS && isSixteenBit) {
-		error = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup16Bit30Hz.fmt");
-		std::cout << "30 FPS, 16 Bit\n";
-	}
-	else if(isThirtyFPS && !isSixteenBit) {
-		error = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup14Bit30Hz.fmt");
-		std::cout << "30 FPS, 14 Bit\n";
-	}
-	else if(!isThirtyFPS && isSixteenBit) {
-		error = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup16Bit15Hz.fmt");
-		std::cout << "15 FPS, 16 Bit\n";
-	}
-	else {
-		error = pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup14Bit15Hz.fmt");
-		std::cout << "15 FPS, 14 Bit\n";
-	}
-	return error;
-}
-
-void PXD::getDateTime() {
-	std::time_t t = std::time(0);
-	
-	// Convert to string
-	// Ignoring CRT_SECURE_NO_WARNINGS
-	dateTime = ctime(&t);
-
-	// Sanitize string
-	for (std::string::iterator it = dateTime.begin(); it != dateTime.end(); ++it) {
-		if (*it == ' ')
-			*it = '_';
-		if (*it == ':')
-			*it = '-';
-	}
-	dateTime.erase(std::remove(dateTime.begin(), dateTime.end(), '\n'), dateTime.end());
+	return pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup16Bit30Hz.fmt");
 }
 
 int PXD::enable() {

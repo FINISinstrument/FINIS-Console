@@ -33,7 +33,6 @@ class PXD {
 
 		std::string getFolderPath();
 		std::string createFolder();
-		void getDateTime();
 	private:
 		int openPXD();
 
@@ -50,10 +49,8 @@ class PXD {
 		bool isSixteenBit;
 		bool isStreaming;
 		bool isOpen;
-		//std::string imageName; // argument in snap function
 		std::string liveName;
 		std::string dateTime;
-		//int frameCount;
 		int imagesCaptured;
 
 		static int halfBufferSize;

@@ -13,4 +13,23 @@ static std::string ZeroPadString(int num) {
 	return ss.str();
 }
 
+static std::string getDateTime() {
+	std::time_t t = std::time(0);
+
+	// Convert to string
+	// Ignoring CRT_SECURE_NO_WARNINGS
+	std::string dateTime = ctime(&t);
+
+	// Sanitize string
+	for (std::string::iterator it = dateTime.begin(); it != dateTime.end(); ++it) {
+		if (*it == ' ')
+			*it = '_';
+		if (*it == ':')
+			*it = '-';
+	}
+	dateTime.erase(std::remove(dateTime.begin(), dateTime.end(), '\n'), dateTime.end());
+
+	return dateTime;
+}
+
 #endif
