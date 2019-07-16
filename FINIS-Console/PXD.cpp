@@ -93,7 +93,7 @@ bool PXD::parseCommand(std::string command) {
 	
 	std::cout << "count: " << count << "\tseconds: " << useSeconds << "\n";
 
-	video(count, useSeconds);
+	video(count, useSeconds, false);
 	
 	return true;
 }
@@ -256,7 +256,7 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 	std::cout << "frameCount: " << frameCount << "\n";
 }
 
-int PXD::video(int frameCount, bool useSeconds) {
+int PXD::video(int frameCount, bool useSeconds, bool enableContext) {
 	// Disable if live from a previous occurance or snap
 	if (isStreaming) {
 		pxd_goUnLive(1);
@@ -276,15 +276,21 @@ int PXD::video(int frameCount, bool useSeconds) {
 	// Don't need to create folder, it will be created from FINIS-Console
 	// TODO this functionality will need to be refactored during the script testing
 
-	// Update context cameras working directory
-	for (int i = 0; i < contextCameras.size(); i++) {
-		contextCameras[i].setFilePath(folderPath);
+	// Check if context cameras are enabled
+	if (enableContext) {
+		// Update context cameras working directory
+		for (int i = 0; i < contextCameras.size(); i++) {
+			contextCameras[i].setFilePath(folderPath);
+		}
+		contextCamera_1.setFilePath(folderPath);
+		contextCamera_2.setFilePath(folderPath);
+		std::cout << "Folder path: *" << folderPath << "*\n";
+		contextCamera_1.setDivisor(1);
+		contextCamera_2.setDivisor(1);
 	}
-	contextCamera_1.setFilePath(folderPath);
-	contextCamera_2.setFilePath(folderPath);
-	std::cout << "Folder path: *" << folderPath << "*\n";
-	contextCamera_1.setDivisor(1);
-	contextCamera_2.setDivisor(1);
+	else {
+		finishedWithContext = true;
+	}
 	
 	// Create semaphore object for syncronizing saving
 	if (firstHandleRun) {
@@ -310,8 +316,10 @@ int PXD::video(int frameCount, bool useSeconds) {
 
 	// Create the file to store the IR camera timestamps
 	f_irTimestamps = new std::ofstream((folderPath + "/ir_timestamps.txt").c_str());
-	f_context1Timestamps = new std::ofstream((folderPath + "/context1_timestamps.txt").c_str());
-	f_context2Timestamps = new std::ofstream((folderPath + "/context2_timestamps.txt").c_str());
+	if (enableContext) {
+		f_context1Timestamps = new std::ofstream((folderPath + "/context1_timestamps.txt").c_str());
+		f_context2Timestamps = new std::ofstream((folderPath + "/context2_timestamps.txt").c_str());
+	}
 
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
@@ -350,11 +358,13 @@ int PXD::video(int frameCount, bool useSeconds) {
 
 	// Close files
 	f_irTimestamps->close();
-	f_context1Timestamps->close();
-	f_context2Timestamps->close();
 	delete f_irTimestamps;
-	delete f_context1Timestamps;
-	delete f_context2Timestamps;
+	if (enableContext) {
+		f_context1Timestamps->close();
+		f_context2Timestamps->close();
+		delete f_context1Timestamps;
+		delete f_context2Timestamps;
+	}
 
 	return 0;
 }

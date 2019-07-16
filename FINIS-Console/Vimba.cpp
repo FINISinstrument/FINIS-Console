@@ -37,7 +37,7 @@ bool Vimba::startCamera() {
 	// Start system and get first camera (this instrament only has one camera attached)
 	sys.Startup();
 	sys.GetCameras(cameras);
-	std::cout << "Found " << cameras.size() << " cameras\n";
+	std::cout << "Found " << cameras.size() << " IR camera(s)\n";
 	if (cameras.size() > 0) {
 		camera = cameras[0];
 
@@ -45,9 +45,11 @@ bool Vimba::startCamera() {
 		sys.OpenCameraByID("DEV_64AA2C448F1F2349", VmbAccessModeFull, camera);
 		camera->GetFeatureByName("ExposureTime", feature);
 		//feature->SetValue(33334.0);
-		feature->SetValue(8000.0);
+		exposure = 8000.0;
+		feature->SetValue(exposure);
 		camera->GetFeatureByName("AcquisitionFrameRate", feature);
-		feature->SetValue(30.0);
+		framerate = 30.0;
+		feature->SetValue(framerate);
 
 		camera->GetFeatureByName("TriggerSource", feature);
 		feature->SetValue("FixedRate");
@@ -68,11 +70,28 @@ bool Vimba::startCamera() {
 	return cameras.size() != 0;
 }
 
+double Vimba::getExposure() {
+	return exposure;
+}
+double Vimba::getFramerate() {
+	return framerate;
+}
+double Vimba::getMaxFramerate() {
+	return 1000000.0 / exposure;
+}
+
 void Vimba::updateExposure(double exposure) {
 	//camera->GetFeatureByName("AcquisitionStop", feature);
 	//feature->RunCommand();
 	camera->GetFeatureByName("ExposureTime", feature);
 	feature->SetValue(exposure);
+	this->exposure = exposure;
 	//camera->GetFeatureByName("AcquisitionStart", feature);
 	//feature->RunCommand();
+}
+
+void Vimba::updateFramerate(double frameRate) {
+	camera->GetFeatureByName("AcquisitionFrameRate", feature);
+	feature->SetValue(frameRate);
+	this->framerate = frameRate;
 }

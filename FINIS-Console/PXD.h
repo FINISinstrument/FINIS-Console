@@ -24,7 +24,7 @@ class PXD {
 		bool parseCommand(std::string command);
 
 		int snap(std::string imageName);
-		int video(int frameCount, bool useSeconds);
+		int video(int frameCount, bool useSeconds, bool enableContext);
 
 		void addContextCamera(ContextCamera &camera);
 		void setContextCamera1(ContextCamera &camera);

@@ -106,15 +106,17 @@ int main() {
 	bool done = false;
 	while (!done) {
 		std::cout << "0: End Program\n";
-		std::cout << "1: Snap a photo\n";
+		std::cout << "1: Snap a photo (IR camera)\n";
 		//LLA: Longitude, Latitude, Altitude
-		std::cout << "2: Get real time LLA data\n";
+		std::cout << "2: Get real time LLA data (IMU)\n";
 		std::cout << "3: Open shutter\n";
 		std::cout << "4: Close shutter\n";
-		std::cout << "5: Record stream\n";
-		std::cout << "6: Run script\n";
-		std::cout << "7: Calibration run\n";
-		std::cout << "8: Flat field test\n";
+		std::cout << "5: Change exposure (IR)\n";
+		std::cout << "6: Change framerate (IR)\n";
+		std::cout << "7: Full recording (IR, 2 context, IMU), timed with frames\n";
+		std::cout << "8: Full recording (IR, 2 context, IMU), timed with seconds\n";
+		std::cout << "9: Vehicle run (IR, IMU), timed with seconds\n";
+		std::cout << "10: Flat field test (IR)\n";
 		std::cout << "Enter a cmd:";;
 		std::cin >> cmd;
 
@@ -140,6 +142,21 @@ int main() {
 				break;
 			}
 			case 5: {
+				std::cout << "Current exposure is " << vimba.getExposure() << "\n";
+				double exposure;
+				std::cout << "Enter new exposure (between 0 and 34000): ";
+				std::cin >> exposure;
+				vimba.updateExposure(exposure);
+			}
+			case 6: {
+				std::cout << "Current framerate is " << vimba.getFramerate() << "\n";
+				std::cout << "Max framerate is " << vimba.getMaxFramerate() << "\n";
+				double framerate;
+				std::cout << "Enter new framerate: ";
+				std::cin >> framerate;
+				vimba.updateFramerate(framerate);
+			}
+			case 7: {
 				std::cout << "Enter frame count: ";
 				int frameCount;
 				std::cin >> frameCount;
@@ -147,20 +164,12 @@ int main() {
 				std::string filePath = pxd.createFolder();
 				imu.setFilePath(filePath);
 				imu.startAsynchData();
-				pxd.video(frameCount, false);
+				pxd.video(frameCount, false, true);
 				imu.stopAsynchData();
 				
 				break;
 			}
-			case 6: {
-				//std::cout << "Enter path to script: ";
-				std::string path;
-				//std::cin >> path;
-				path = "C:/FINIS/testing/scripts/script1.txt";
-				parseScript(path, &vimba, &shutter, &imu, &pxd);
-				break;
-			}
-			case 7: {
+			case 8: {
 				std::string location;
 				std::string speed;
 				std::string distance;
@@ -186,7 +195,7 @@ int main() {
 				std::cin.ignore();
 
 				imu.startAsynchData();
-				pxd.video(timeToRecord, true);
+				pxd.video(timeToRecord, true, true);
 				imu.stopAsynchData();
 
 				// Create file for logging the trial data to
@@ -199,7 +208,56 @@ int main() {
 
 				break;
 			}
-			case 8: {
+			/*
+			case 6: {
+				//std::cout << "Enter path to script: ";
+				std::string path;
+				//std::cin >> path;
+				path = "C:/FINIS/testing/scripts/script1.txt";
+				parseScript(path, &vimba, &shutter, &imu, &pxd);
+				break;
+			}
+			*/
+			case 9: {
+				std::string location;
+				std::string speed;
+				std::string distance;
+				std::string trial;
+				int timeToRecord;
+
+				std::cout << "Enter location: ";
+				std::cin >> location;
+				std::cout << "Enter speed: ";
+				std::cin >> speed;
+				std::cout << "Enter distance to scene: ";
+				std::cin >> distance;
+				std::cout << "Enter trial number: ";
+				std::cin >> trial;
+				std::cout << "Enter time to record (in seconds): ";
+				std::cin >> timeToRecord;
+
+				std::string filePath = pxd.createFolder();
+				imu.setFilePath(filePath);
+
+				std::cout << "Press enter to begin...";
+				std::cin.ignore();
+				std::cin.ignore();
+
+				imu.startAsynchData();
+				pxd.video(timeToRecord, true, false);
+				imu.stopAsynchData();
+
+				// Create file for logging the trial data to
+				std::ofstream loggerFile = std::ofstream((filePath + "/trial_data.txt").c_str());
+				loggerFile << "Location: " << location << "\n";
+				loggerFile << "Speed:    " << speed << "\n";
+				loggerFile << "Distance: " << distance << "\n";
+				loggerFile << "Trial No: " << trial << "\n";
+				loggerFile << "Time recording: " << timeToRecord << "\n";
+
+				break;
+			}
+			case 10: {
 				std::cin.ignore();
 				std::string gasses[2] = { "Methane", "Nitrogen" };
 				std::string cellLengths[3] = { "10.16cm", "25cm", "50cm" };
