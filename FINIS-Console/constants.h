@@ -13,6 +13,12 @@ static std::string ZeroPadString(int num) {
 	return ss.str();
 }
 
+static std::string ZeroPadString(int num, int length) {
+	std::ostringstream ss;
+	ss << std::setw(length) << std::setfill('0') << num;
+	return ss.str();
+}
+
 static std::string getDateTime() {
 	std::time_t t = std::time(0);
 

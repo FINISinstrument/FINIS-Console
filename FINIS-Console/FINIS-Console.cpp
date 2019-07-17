@@ -29,12 +29,6 @@
 //header files we have written
 #include "IMU.h"
 
-std::string ZeroPadString(int num, int size) {
-	std::ostringstream ss;
-	ss << std::setw(size) << std::setfill('0') << num;
-	return ss.str();
-}
-
 void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* imu, PXD* pxd) {
 	// Open the script file
 	std::ifstream script(scriptPath);
@@ -117,6 +111,7 @@ int main() {
 		std::cout << "8: Full recording (IR, 2 context, IMU), timed with seconds\n";
 		std::cout << "9: Vehicle run (IR, IMU), timed with seconds\n";
 		std::cout << "10: Flat field test (IR)\n";
+		std::cout << "11: Single calibration run (IR)\n";
 		std::cout << "Enter a cmd:";;
 		std::cin >> cmd;
 
@@ -300,6 +295,37 @@ int main() {
 						}
 					}
 				}
+				pxd_goLive(1, 1);
+				break;
+			}
+			case 11: {
+				std::cin.ignore();
+				
+				std::string path = "C:/FINIS/calibration/ExposureTest/";
+				// Attemp to create subfolder
+				CreateDirectoryA((path).c_str(), NULL);
+				int minimum = 1000; // Measured in microseconds
+				int maximum = 33000; // Measured in microseconds
+				int stepSize = 1000; // Meausred in microseconds
+				int frameCount = 10; // Frames to capture per run
+				pxd_goUnLive(1);
+
+				for (int i = minimum; i <= maximum; i += stepSize) {
+					std::cout << "Aquiring at " << i << " microsecond exposure\n";
+					// Change exposure
+					vimba.updateExposure(i);
+					// Take image
+					std::cout << "Starting capture\n";
+					pxd_goLiveSeq(1, 1, 401, 1, frameCount, 1);
+					// Wait for completion
+					while (pxd_goneLive(1, 0)) { Sleep(0); }
+					// Save images
+					std::cout << "Saving images\n";
+					for (int j = 1; j <= frameCount; j++) {
+						pxd_saveTiff(1, (path + ZeroPadString(i, 5) + "_" + ZeroPadString(j, 2) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
+					}
+				}
+				
 				pxd_goLive(1, 1);
 				break;
 			}

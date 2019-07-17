@@ -36,7 +36,7 @@ int ContextCamera::snap() {
 	int temp = 1 + frameIndex / FRAMES_IN_FOLDER;
 	if (temp != folderNumber) {
 		folderNumber = temp;
-		CreateDirectoryA((filePath + "/" + std::to_string(folderNumber)).c_str(), NULL);
+		CreateDirectoryA((filePath + "/" + cameraName + "_" + ZeroPadString(folderNumber,3)).c_str(), NULL);
 	}
 
 	divisor_index++;
@@ -44,7 +44,7 @@ int ContextCamera::snap() {
 		// Snap a picture
 		cam >> frame;
 		//std::cout << "Camera " << cameraName << " snapped a picture\n";
-		imwrite((filePath + "/" + std::to_string(folderNumber) + "/" + cameraName + "_" + ZeroPadString(frameIndex++) + ".tiff").c_str(), frame, tags);
+		imwrite((filePath + "/" + cameraName + "_" + ZeroPadString(folderNumber,3) + "/" + cameraName + "_" + ZeroPadString(frameIndex++) + ".tiff").c_str(), frame, tags);
 		divisor_index = 0;
 	}
 	return divisor_index;
