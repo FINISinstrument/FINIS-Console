@@ -129,6 +129,15 @@ void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index) 
 		*(IMU::m_file) << "LLA X" << lla.x << std::endl;
 		*(IMU::m_file) << "LLA Y" << lla.y << std::endl;
 		*(IMU::m_file) << "LLA Z" << lla.z << std::endl;
+
+		std::cout << "Binary Async TimeStartup: " << timeStartup << std::endl;
+		std::cout << "Binary Async YPR: " << ypr << std::endl;
+		std::cout << "VEL X" << vel.x << std::endl;
+		std::cout << "VEL Y" << vel.y << std::endl;
+		std::cout << "VEL Z" << vel.z << std::endl;
+		std::cout << "LLA X" << lla.x << std::endl;
+		std::cout << "LLA Y" << lla.y << std::endl;
+		std::cout << "LLA Z" << lla.z << std::endl;
 	}
 
 }

@@ -11,12 +11,12 @@ class Vimba {
 
 		bool startCamera();
 
-		double getExposure();
-		double getFramerate();
-		double getMaxFramerate();
+		float getExposure();
+		float getFramerate();
+		float getMaxFramerate();
 
-		void updateExposure(double exposureTime);
-		void updateFramerate(double frameRate);
+		void updateExposure(float exposureTime);
+		void updateFramerate(float frameRate);
 	private:
 		AVT::VmbAPI::VimbaSystem &sys;
 		AVT::VmbAPI::CameraPtrVector cameras;
@@ -24,6 +24,6 @@ class Vimba {
 		AVT::VmbAPI::FeaturePtr feature;
 		bool cameraConnected;
 
-		double exposure;
-		double framerate;
+		float exposure;
+		float framerate;
 };

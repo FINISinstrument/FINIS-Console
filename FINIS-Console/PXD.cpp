@@ -117,7 +117,7 @@ void PXD::recordFrames(int videoPeriod) {
 	uint32_t time;
 	uint32_t last_time;
 
-	pxd_goLiveSeq(1, 1, 401, 1, 0, videoPeriod);
+	pxd_goLiveSeq(1, 1, 400, 1, 0, videoPeriod);
 	//while (pxd_goneLive(1, 0)) { Sleep(0); }
 
 	last_time = 0;

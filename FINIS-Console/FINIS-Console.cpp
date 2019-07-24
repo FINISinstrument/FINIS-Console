@@ -99,21 +99,22 @@ int main() {
 	int cmd;
 	bool done = false;
 	while (!done) {
-		std::cout << "0: End Program\n";
-		std::cout << "1: Snap a photo (IR camera)\n";
+		std::cout << "\n\n\n\n\n\n\n\n\n";
+		std::cout << "  0: End Program\n";
+		std::cout << "  1: Snap a photo (IR camera)\n";
 		//LLA: Longitude, Latitude, Altitude
-		std::cout << "2: Get real time LLA data (IMU)\n";
-		std::cout << "3: Open shutter\n";
-		std::cout << "4: Close shutter\n";
-		std::cout << "5: Change exposure (IR)\n";
-		std::cout << "6: Change framerate (IR)\n";
-		std::cout << "7: Full recording (IR, 2 context, IMU), timed with frames\n";
-		std::cout << "8: Full recording (IR, 2 context, IMU), timed with seconds\n";
-		std::cout << "9: Vehicle run (IR, IMU), timed with seconds\n";
-		std::cout << "10: Flat field test (IR)\n";
-		std::cout << "11: Single calibration run (IR)\n";
+		std::cout << "  2: Get real time LLA data (IMU)\n";
+		std::cout << "  3: Open shutter\n";
+		std::cout << "  4: Close shutter\n";
+		std::cout << "  5: Change exposure (IR)\n";
+		std::cout << "  6: Full recording (IR, 2 context, IMU), timed with frames\n";
+		std::cout << "  7: Full recording (IR, 2 context, IMU), timed with seconds\n";
+		std::cout << "  8: Vehicle run (IR, IMU), timed with seconds\n";
+		std::cout << "  9: Flat field test (IR)\n";
+		std::cout << " 10: Single calibration run (IR)\n";
 		std::cout << "Enter a cmd:";;
 		std::cin >> cmd;
+		std::cout << "\n";
 
 		switch (cmd) {
 			case 0: { //end the program
@@ -125,6 +126,7 @@ int main() {
 				break;
 			}
 			case 2: {
+				imu.setFilePath("C:/FINIS/testing/");
 				imu.debugGetAsynchData();
 				break;
 			}
@@ -138,20 +140,26 @@ int main() {
 			}
 			case 5: {
 				std::cout << "Current exposure is " << vimba.getExposure() << "\n";
-				double exposure;
+				float exposure;
 				std::cout << "Enter new exposure (between 0 and 34000): ";
 				std::cin >> exposure;
 				vimba.updateExposure(exposure);
+
+				break;
 			}
+					/*
 			case 6: {
 				std::cout << "Current framerate is " << vimba.getFramerate() << "\n";
 				std::cout << "Max framerate is " << vimba.getMaxFramerate() << "\n";
-				double framerate;
+				float framerate;
 				std::cout << "Enter new framerate: ";
 				std::cin >> framerate;
 				vimba.updateFramerate(framerate);
+
+				break;
 			}
-			case 7: {
+			*/
+			case 6: {
 				std::cout << "Enter frame count: ";
 				int frameCount;
 				std::cin >> frameCount;
@@ -164,7 +172,7 @@ int main() {
 				
 				break;
 			}
-			case 8: {
+			case 7: {
 				std::string location;
 				std::string speed;
 				std::string distance;
@@ -200,6 +208,8 @@ int main() {
 				loggerFile << "Distance: " << distance << "\n";
 				loggerFile << "Trial No: " << trial << "\n";
 				loggerFile << "Time recording: " << timeToRecord << "\n";
+				loggerFile << "Exposure: " << vimba.getExposure() << "\n";
+				loggerFile << "Frame Rate: " << vimba.getFramerate() << "\n";
 
 				break;
 			}
@@ -213,7 +223,7 @@ int main() {
 				break;
 			}
 			*/
-			case 9: {
+			case 8: {
 				std::string location;
 				std::string speed;
 				std::string distance;
@@ -249,10 +259,12 @@ int main() {
 				loggerFile << "Distance: " << distance << "\n";
 				loggerFile << "Trial No: " << trial << "\n";
 				loggerFile << "Time recording: " << timeToRecord << "\n";
+				loggerFile << "Exposure: " << vimba.getExposure() << "\n";
+				loggerFile << "Frame Rate: " << vimba.getFramerate() << "\n";
 
 				break;
 			}
-			case 10: {
+			case 9: {
 				std::cin.ignore();
 				std::string gasses[2] = { "Methane", "Nitrogen" };
 				std::string cellLengths[3] = { "10.16cm", "25cm", "50cm" };
@@ -268,17 +280,17 @@ int main() {
 						// Attemp to create subfolder
 						CreateDirectoryA((cellPath).c_str(), NULL);
 						std::cout << "BasePath: *" << cellPath << "*\n";
-						int minimum = 1000; // Measured in microseconds
-						int maximum = 33000; // Measured in microseconds
-						int stepSize = 1000; // Meausred in microseconds
-						int frameCount = 10; // Frames to capture per run
+						float minimum = 1000; // Measured in microseconds
+						float maximum = 33000; // Measured in microseconds
+						float stepSize = 1000; // Meausred in microseconds
+						float frameCount = 10; // Frames to capture per run
 						pxd_goUnLive(1);
 
 						// Wait for user input to change cells
 						std::cout << "Beginning calibration of " << gasses[i] << " in " << cellLengths[j] << " cell. Press Enter to begin calibration...";
 						std::cin.ignore();
 
-						for (int i = minimum; i <= maximum; i += stepSize) {
+						for (float i = minimum; i <= maximum; i += stepSize) {
 							std::cout << "Aquiring at " << i << " microsecond exposure\n";
 							// Change exposure
 							vimba.updateExposure(i);
@@ -298,19 +310,19 @@ int main() {
 				pxd_goLive(1, 1);
 				break;
 			}
-			case 11: {
+			case 10: {
 				std::cin.ignore();
 				
 				std::string path = "C:/FINIS/calibration/ExposureTest/";
 				// Attemp to create subfolder
 				CreateDirectoryA((path).c_str(), NULL);
-				int minimum = 1000; // Measured in microseconds
-				int maximum = 33000; // Measured in microseconds
-				int stepSize = 1000; // Meausred in microseconds
-				int frameCount = 10; // Frames to capture per run
+				float minimum = 1000; // Measured in microseconds
+				float maximum = 33000; // Measured in microseconds
+				float stepSize = 1000; // Meausred in microseconds
+				float frameCount = 10; // Frames to capture per run
 				pxd_goUnLive(1);
 
-				for (int i = minimum; i <= maximum; i += stepSize) {
+				for (float i = minimum; i <= maximum; i += stepSize) {
 					std::cout << "Aquiring at " << i << " microsecond exposure\n";
 					// Change exposure
 					vimba.updateExposure(i);

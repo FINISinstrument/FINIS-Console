@@ -47,12 +47,12 @@ bool Vimba::startCamera() {
 		//feature->SetValue(33334.0);
 		exposure = 8000.0;
 		feature->SetValue(exposure);
-		camera->GetFeatureByName("AcquisitionFrameRate", feature);
+		//camera->GetFeatureByName("AcquisitionFrameRate", feature);
 		framerate = 30.0;
-		feature->SetValue(framerate);
+		//feature->SetValue(framerate);
 
-		camera->GetFeatureByName("TriggerSource", feature);
-		feature->SetValue("FixedRate");
+		//camera->GetFeatureByName("TriggerSource", feature);
+		//feature->SetValue("FixedRate");
 
 		camera->GetFeatureByName("SensorGain", feature);
 		feature->SetValue("Gain1");
@@ -70,17 +70,17 @@ bool Vimba::startCamera() {
 	return cameras.size() != 0;
 }
 
-double Vimba::getExposure() {
+float Vimba::getExposure() {
 	return exposure;
 }
-double Vimba::getFramerate() {
+float Vimba::getFramerate() {
 	return framerate;
 }
-double Vimba::getMaxFramerate() {
+float Vimba::getMaxFramerate() {
 	return 1000000.0 / exposure;
 }
 
-void Vimba::updateExposure(double exposure) {
+void Vimba::updateExposure(float exposure) {
 	//camera->GetFeatureByName("AcquisitionStop", feature);
 	//feature->RunCommand();
 	camera->GetFeatureByName("ExposureTime", feature);
@@ -90,7 +90,7 @@ void Vimba::updateExposure(double exposure) {
 	//feature->RunCommand();
 }
 
-void Vimba::updateFramerate(double frameRate) {
+void Vimba::updateFramerate(float frameRate) {
 	camera->GetFeatureByName("AcquisitionFrameRate", feature);
 	feature->SetValue(frameRate);
 	this->framerate = frameRate;
