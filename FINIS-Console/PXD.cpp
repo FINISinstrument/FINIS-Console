@@ -240,12 +240,12 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 		// Set subfolder value
 		folderNumber = 1 + frameCount / FRAMES_IN_FOLDER;
 		// Attemp to create subfolder
-		CreateDirectoryA((folderPath + "/IR_" + ZeroPadString(folderNumber,3)).c_str(), NULL);
+		CreateDirectoryA((folderPath + "/IR/IR_" + ZeroPadString(folderNumber,3)).c_str(), NULL);
 
 		// Save data
 		for (int i = 0; i < halfBufferSize; i++) {
 			// Save frame
-			pxd_saveTiff(1, (folderPath + "/IR_" + ZeroPadString(folderNumber,3) + "/IR_" + ZeroPadString(frameCount + i + 1) + ".tiff").c_str(), (firstHalf * 200) + i + 1, 0, 0, -1, -1, 0, 0);
+			pxd_saveTiff(1, (folderPath + "/IR/IR_" + ZeroPadString(folderNumber,3) + "/IR_" + ZeroPadString(frameCount + i + 1) + ".tiff").c_str(), (firstHalf * 200) + i + 1, 0, 0, -1, -1, 0, 0);
 			// Save frame timestamp
 			*f_irTimestamps << frameCount + i << "\t" << frameTimestamps[(firstHalf * 200) + i] << "\n";
 		}

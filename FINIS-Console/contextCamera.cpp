@@ -36,7 +36,7 @@ int ContextCamera::snap() {
 	int temp = 1 + frameIndex / FRAMES_IN_FOLDER;
 	if (temp != folderNumber) {
 		folderNumber = temp;
-		CreateDirectoryA((filePath + "/" + cameraName + "_" + ZeroPadString(folderNumber,3)).c_str(), NULL);
+		CreateDirectoryA((filePath + "/" + cameraName + "/" + cameraName + "_" + ZeroPadString(folderNumber,3)).c_str(), NULL);
 	}
 
 	divisor_index++;
