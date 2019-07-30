@@ -89,8 +89,8 @@ int main() {
 	std::cout << "Opened frame grabber\n";
 
 	// Open context cameras
-	ContextCamera context1(0, "C:/FINIS/testing", "context1");
-	ContextCamera context2(1, "C:/FINIS/testing", "context2");
+	ContextCamera context1(0, "C:/FINIS/testing", "context1", true);
+	ContextCamera context2(1, "C:/FINIS/testing", "context2", false);
 
 	// Add context cameras to PXD object
 	pxd.setContextCamera1(context1);
