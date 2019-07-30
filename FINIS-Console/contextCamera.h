@@ -13,7 +13,7 @@
 class ContextCamera {
 	public:
 		ContextCamera();
-		ContextCamera(int camera_id, std::string basePath, std::string camera);
+		ContextCamera(int camera_id, std::string basePath, std::string camera, bool useSmallResolution);
 		~ContextCamera();
 
 		void setFilePath(std::string path) { filePath = path; frameIndex = 0; folderNumber = 0; }
