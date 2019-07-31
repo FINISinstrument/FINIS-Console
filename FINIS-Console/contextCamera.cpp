@@ -11,6 +11,7 @@ ContextCamera::ContextCamera(int camera_id, std::string basePath, std::string ca
 	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
 	//cam.set(cv::CAP_PROP_FRAME_WIDTH, 480);
 	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 360);
+<<<<<<< Updated upstream
     if (useSmallResolution) {
         cam.set(cv::CAP_PROP_FRAME_WIDTH, 320);
         cam.set(cv::CAP_PROP_FRAME_HEIGHT, 240);
@@ -20,6 +21,12 @@ ContextCamera::ContextCamera(int camera_id, std::string basePath, std::string ca
     }
 	//cam.set(cv::CAP_PROP_FRAME_WIDTH, 160);
 	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 120);
+=======
+	//cam.set(cv::CAP_PROP_FRAME_WIDTH, 320);
+	//cam.set(cv::CAP_PROP_FRAME_HEIGHT, 240);
+	cam.set(cv::CAP_PROP_FRAME_WIDTH, 160);
+	cam.set(cv::CAP_PROP_FRAME_HEIGHT, 120);
+>>>>>>> Stashed changes
 	cam.set(cv::CAP_PROP_FPS, 30);
 
 	filePath = basePath;
