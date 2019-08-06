@@ -155,7 +155,7 @@ void PXD::recordFrames(int videoPeriod) {
 }
 
 void PXD::contextOneSnapper() {
-	
+	/*
 	auto now = std::chrono::high_resolution_clock::now();
 	auto last = now;
 	auto duration = now.time_since_epoch();
@@ -180,7 +180,7 @@ void PXD::contextOneSnapper() {
 
 		WaitForSingleObject(context1_semaphore, INFINITE);
 	}
-	
+	*/
 }
 void PXD::contextTwoSnapper() {
 	auto now = std::chrono::high_resolution_clock::now();
@@ -246,7 +246,7 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 		CreateDirectoryA((folderPath + "/IR/IR_" + ZeroPadString(folderNumber,3)).c_str(), NULL);
 
 		// Save data
-		for (int i = 0; i < halfBufferSize; i++) {
+		for (int i = 0; i < halfBufferSize; i+=10) {
 			// Save frame
 			pxd_saveTiff(1, (folderPath + "/IR/IR_" + ZeroPadString(folderNumber,3) + "/IR_" + ZeroPadString(frameCount + i + 1) + ".tiff").c_str(), (firstHalf * 200) + i + 1, 0, 0, -1, -1, 0, 0);
 			// Save frame timestamp
