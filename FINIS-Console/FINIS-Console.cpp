@@ -71,6 +71,24 @@ void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* im
 	script.close();
 }
 
+/* Function to handle recording of data */
+void recordData(ContextCamera* context, ContextCamera* aBand, PXD* pxd, IMU* imu) {
+	// Determine folder that will be saved to
+
+
+	// Spawn thread for context
+
+	// Spawn thread for aBand
+	
+	// Spawn thread for IMU
+
+	// Spawn thread for PXD
+
+	// Signal everything to begin
+
+	// Join threads, if inititalized
+}
+
 int main() {
 	Vimba vimba = Vimba();
 	vimba.startCamera();

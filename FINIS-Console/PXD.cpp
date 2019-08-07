@@ -205,7 +205,7 @@ void PXD::contextTwoSnapper() {
 			*f_context2Timestamps << millis << "\n";
 		}
 
-		WaitForSingleObject(context2_semaphore, INFINITE);
+		//WaitForSingleObject(context2_semaphore, INFINITE);
 	}
 }
 
@@ -383,6 +383,7 @@ void PXD::setContextCamera2(ContextCamera &camera) {
 }
 
 std::string PXD::createFolder() {
+	/*
 	// Get directory to save images to
 	dateTime = getDateTime();
 	folderPath = baseVideoPath + dateTime;
@@ -391,6 +392,8 @@ std::string PXD::createFolder() {
 	std::cout << GetLastError() << "\n";
 
 	return folderPath;
+	*/
+	return createBaseSavePath(baseVideoPath);
 }
 
 std::string PXD::getFolderPath() {

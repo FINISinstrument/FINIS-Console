@@ -4,6 +4,10 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+// These headers are used to convert std::string to std::wstring
+#include <locale>
+#include <codecvt>
+#include "createDirectoryRecursively.h"
 
 #define FRAMES_IN_FOLDER 800 // How many frames to store in a folders
 
@@ -36,6 +40,26 @@ static std::string getDateTime() {
 	dateTime.erase(std::remove(dateTime.begin(), dateTime.end(), '\n'), dateTime.end());
 
 	return dateTime;
+}
+
+static std::string createBaseSavePath(std::string folderPath) {
+	// Get directory to save images to
+	std::string dateTime = getDateTime();
+	std::string path = folderPath + "/" + dateTime;
+
+	// Conversion to wstring for directory creation
+	std::wstring w_path;
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	std::string narrow = converter.to_bytes(w_path);
+	std::wstring wide = converter.from_bytes(path);
+
+	createDirectoryRecursively(wide);
+	//folderPath = baseVideoPath + dateTime;
+	// Create directory
+	//CreateDirectoryA(folderPath.c_str(), NULL);
+	//std::cout << GetLastError() << "\n";
+
+	return path;
 }
 
 #endif

@@ -162,6 +162,7 @@
   <ItemGroup>
     <ClInclude Include="constants.h" />
     <ClInclude Include="contextCamera.h" />
+    <ClInclude Include="createDirectoryRecursively.h" />
     <ClInclude Include="PXD.h" />
     <ClInclude Include="IMU.h" />
     <ClInclude Include="include\VimbaCPP\Include\VimbaCPP.h" />
@@ -174,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="contextCamera.cpp" />
+    <ClCompile Include="createDirectoryRecursively.cpp" />
     <ClCompile Include="FINIS-Console.cpp" />
     <ClCompile Include="IMU.cpp" />
     <ClCompile Include="pch.cpp">

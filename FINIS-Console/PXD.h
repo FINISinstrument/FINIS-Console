@@ -61,8 +61,8 @@ class PXD {
 		static std::atomic<bool> finishedWithSaving;
 		static std::atomic<bool> finishedWithContext;
 
-		std::string baseImagePath = "C:/FINIS/testing/Image/";
-		std::string baseVideoPath = "C:/FINIS/testing/Video/";
+		std::string baseImagePath = "C:/FINIS/testing/Image";
+		std::string baseVideoPath = "C:/FINIS/testing/Video";
 
 		// Frame buffer information
 		static uint32_t* frameTimestamps;

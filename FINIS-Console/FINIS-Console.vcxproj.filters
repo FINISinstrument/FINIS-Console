@@ -69,6 +69,7 @@
     <ClCompile Include="Shutter.cpp" />
     <ClCompile Include="PXD.cpp" />
     <ClCompile Include="contextCamera.cpp" />
+    <ClCompile Include="createDirectoryRecursively.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IMU.h">
@@ -94,6 +95,7 @@
     <ClInclude Include="PXD.h" />
     <ClInclude Include="contextCamera.h" />
     <ClInclude Include="constants.h" />
+    <ClInclude Include="createDirectoryRecursively.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FINIS-Console.rc" />
