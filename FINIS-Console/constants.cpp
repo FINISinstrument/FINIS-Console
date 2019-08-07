@@ -31,22 +31,36 @@ std::string getDateTime() {
 	return dateTime;
 }
 
+std::string createBaseSavePath() {
+	return createBaseSavePath("C:/FINIS/testing/Video");
+}
 std::string createBaseSavePath(std::string folderPath) {
 	// Get directory to save images to
 	std::string dateTime = getDateTime();
 	std::string path = folderPath + "/" + dateTime;
 
 	// Conversion to wstring for directory creation
+	/*
 	std::wstring w_path;
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	std::string narrow = converter.to_bytes(w_path);
 	std::wstring wide = converter.from_bytes(path);
+	*/
 
-	createDirectoryRecursively(wide);
+	createDirectoryRecursively(s2w(path));
 	//folderPath = baseVideoPath + dateTime;
 	// Create directory
 	//CreateDirectoryA(folderPath.c_str(), NULL);
 	//std::cout << GetLastError() << "\n";
 
 	return path;
+}
+
+std::wstring s2w(std::string s) {
+	std::wstring w;
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	std::string narrow = converter.to_bytes(w);
+	std::wstring wide = converter.from_bytes(s);
+
+	return wide;
 }

@@ -17,6 +17,9 @@ std::string ZeroPadString(int num, int length);
 
 std::string getDateTime();
 
+std::string createBaseSavePath();
 std::string createBaseSavePath(std::string folderPath);
+
+std::wstring s2w(std::string s);
 
 #endif
