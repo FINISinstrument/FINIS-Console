@@ -82,6 +82,7 @@ void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU*
 	std::vector<std::thread> threads;
 	HANDLE semaphore_context1 = CreateSemaphore(NULL, 0, 1, NULL);
 	HANDLE semaphore_context2 = CreateSemaphore(NULL, 0, 1, NULL);
+	HANDLE semaphore_imu      = CreateSemaphore(NULL, 0, 1, NULL);
 
 	// Spawn thread for context (context1), if enabled
 	if (context1 != nullptr) {
@@ -98,18 +99,23 @@ void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU*
 	// Spawn thread for IMU
 	if (imu != nullptr) {
 		imu->setFilePath(baseSavePath);
-		threads.push_back(std::thread(&IMU::startAsynchData, imu));
+		threads.push_back(std::thread(&IMU::asynchData, imu, semaphore_imu));
 	}
 
 	// Spawn thread for PXD
-	if (pxd != nullptr) {
-		pxd->setFilePath(baseSavePath);
-		threads.push_back(std::thread(&PXD::video, pxd, duration, useSeconds, false));
-	}
+	pxd->setFilePath(baseSavePath);
+	std::thread thread_pxd(&PXD::video, pxd, duration, useSeconds, false);
 
 	// Signal everything to begin
 	ReleaseSemaphore(semaphore_context1, 1, NULL);
 	ReleaseSemaphore(semaphore_context2, 1, NULL);
+
+	// Wait for PXD to finish
+	thread_pxd.join();
+
+	// Signal everything to stop
+	ReleaseSemaphore(semaphore_imu, 1, NULL);
+	contextComplete = false;
 
 	// Join threads
 	for (unsigned int i = 0; i < threads.size(); i++) {

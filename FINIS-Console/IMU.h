@@ -27,6 +27,7 @@ public:
 	void debugGetAsynchData();
 	void startAsynchData();
 	void stopAsynchData();
+	void asynchData(HANDLE semaphore);
 	void setFilePath(std::string filePath) {
 		m_filePath = filePath;
 	};

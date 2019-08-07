@@ -87,6 +87,17 @@ void IMU::stopAsynchData() {
 	m_file->close();
 }
 
+void IMU::asynchData(HANDLE semaphore) {
+	// Start recording
+	startAsynchData();
+
+	// Wait for signal to stop
+	WaitForSingleObject(semaphore, INFINITE);
+
+	// Stop recording
+	stopAsynchData();
+}
+
 void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index) {
 	if (p.type() == Packet::TYPE_ASCII && p.determineAsciiAsyncType() == VNYPR) {
 		vec3f ypr;
@@ -129,7 +140,8 @@ void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index) 
 		*(IMU::m_file) << "LLA X" << lla.x << std::endl;
 		*(IMU::m_file) << "LLA Y" << lla.y << std::endl;
 		*(IMU::m_file) << "LLA Z" << lla.z << std::endl;
-
+		
+		/*
 		std::cout << "Binary Async TimeStartup: " << timeStartup << std::endl;
 		std::cout << "Binary Async YPR: " << ypr << std::endl;
 		std::cout << "VEL X" << vel.x << std::endl;
@@ -138,6 +150,6 @@ void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index) 
 		std::cout << "LLA X" << lla.x << std::endl;
 		std::cout << "LLA Y" << lla.y << std::endl;
 		std::cout << "LLA Z" << lla.z << std::endl;
+		*/
 	}
-
 }
