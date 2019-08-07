@@ -26,18 +26,14 @@ class PXD {
 		int snap(std::string imageName);
 		int video(int frameCount, bool useSeconds, bool enableContext);
 
-		void addContextCamera(ContextCamera &camera);
-		void setContextCamera1(ContextCamera &camera);
-		void setContextCamera2(ContextCamera &camera);
-		void setIMU(IMU *imu);
+		void setFilePath(std::string path) {
+			folderPath = path;
+		};
 	private:
 		int openPXD();
 
 		static void recordFrames(int videoPeriod);
 		static void saveFrames(int count, int videoPeriod, bool secondsCount);
-
-		static void contextOneSnapper();
-		static void contextTwoSnapper();
 
 		int enable();
 		int disable();
@@ -66,17 +62,8 @@ class PXD {
 
 		static bool firstHandleRun;
 
-		// Reference to context cameras that need to be snapped
-		static std::vector<ContextCamera> contextCameras;
-		static ContextCamera contextCamera_1;
-		static ContextCamera contextCamera_2;
-
 		// Semaphore information
 		static HANDLE ghSemaphore;
-		static HANDLE context1_semaphore;
-		static HANDLE context2_semaphore;
 
 		static std::ofstream* f_irTimestamps;
-		static std::ofstream* f_context1Timestamps;
-		static std::ofstream* f_context2Timestamps;
 };

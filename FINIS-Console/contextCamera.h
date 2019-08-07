@@ -22,6 +22,7 @@ class ContextCamera {
 
 		int snap();
 		int recordFrames(int count);
+		void record(HANDLE &signal_begin, std::atomic<bool> &complete);
 	private:
 		cv::VideoCapture cam;
 		cv::Mat frame;

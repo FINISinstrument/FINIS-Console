@@ -58,6 +58,40 @@ int ContextCamera::snap() {
 	return divisor_index;
 }
 
+void ContextCamera::record(HANDLE &signal_begin, std::atomic<bool> &complete) {
+	// Create file to record timestamps
+	std::ofstream f_timestamps = std::ofstream((filePath + "/" + cameraName + "_timestamps.txt").c_str());
+
+	int div = 0;
+
+	// Setup timestamp variables
+	auto now = std::chrono::high_resolution_clock::now();
+	auto last = now;
+	auto duration = now.time_since_epoch();
+	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+	// Wait for the calling function to signal the semaphore to begin recording, as other cameras are being initialized
+	WaitForSingleObject(signal_begin, INFINITE);
+
+	while (!complete) {
+		div = snap();
+		// Save frame timestamp
+		if (div == 0) {
+			last = now;
+			now = std::chrono::high_resolution_clock::now();
+			duration = now.time_since_epoch();
+			millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+			f_timestamps << millis << "\t";
+			duration = now - last;
+			millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+			f_timestamps << millis << "\n";
+		}
+	}
+
+	// Close file
+	f_timestamps.close();
+}
+
 int ContextCamera::recordFrames(int count) {
 	for (int i = 0; i < count; i++) {
 		snap();

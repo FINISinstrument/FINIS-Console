@@ -72,21 +72,53 @@ void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* im
 }
 
 /* Function to handle recording of data */
-void recordData(ContextCamera* context, ContextCamera* aBand, PXD* pxd, IMU* imu) {
+void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU* imu, int duration, bool useSeconds) {
 	// Determine folder that will be saved to
 	std::string baseSavePath = createBaseSavePath("C:/FINIS/testing/Video");
 
-	// Spawn thread for context
+	std::atomic<bool> contextComplete = false;
 
-	// Spawn thread for aBand
+	// Initialize semaphores and threads
+	std::vector<std::thread> threads;
+	HANDLE semaphore_context1 = CreateSemaphore(NULL, 0, 1, NULL);
+	HANDLE semaphore_context2 = CreateSemaphore(NULL, 0, 1, NULL);
+
+	// Spawn thread for context (context1), if enabled
+	if (context1 != nullptr) {
+		context1->setFilePath(baseSavePath);
+		threads.push_back(std::thread(&ContextCamera::record, context1, std::ref(semaphore_context1), std::ref(contextComplete)));
+	}
+
+	// Spawn thread for aBand (context2)
+	if (context2 != nullptr) {
+		context2->setFilePath(baseSavePath);
+		threads.push_back(std::thread(&ContextCamera::record, context2, std::ref(semaphore_context2), std::ref(contextComplete)));
+	}
 	
 	// Spawn thread for IMU
+	if (imu != nullptr) {
+		imu->setFilePath(baseSavePath);
+		threads.push_back(std::thread(&IMU::startAsynchData, imu));
+	}
 
 	// Spawn thread for PXD
+	if (pxd != nullptr) {
+		pxd->setFilePath(baseSavePath);
+		threads.push_back(std::thread(&PXD::video, pxd, duration, useSeconds, false));
+	}
 
 	// Signal everything to begin
+	ReleaseSemaphore(semaphore_context1, 1, NULL);
+	ReleaseSemaphore(semaphore_context2, 1, NULL);
 
-	// Join threads, if inititalized
+	// Join threads
+	for (unsigned int i = 0; i < threads.size(); i++) {
+		threads[i].join();
+	}
+
+	// Close semaphores
+	CloseHandle(semaphore_context1);
+	CloseHandle(semaphore_context2);
 }
 
 int main() {
@@ -109,10 +141,6 @@ int main() {
 	// Open context cameras
 	ContextCamera context1(0, "C:/FINIS/testing", "context1", true);
 	ContextCamera context2(1, "C:/FINIS/testing", "context2", true);
-
-	// Add context cameras to PXD object
-	pxd.setContextCamera1(context1);
-	pxd.setContextCamera2(context2);
 
 	int cmd;
 	bool done = false;

@@ -17,14 +17,7 @@ std::atomic<bool> PXD::finishedWithSaving    = false;
 std::atomic<bool> PXD::finishedWithContext   = false;
 bool PXD::firstHandleRun = true;
 HANDLE PXD::ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
-HANDLE PXD::context1_semaphore = CreateSemaphore(NULL, 1, 1, NULL);
-HANDLE PXD::context2_semaphore = CreateSemaphore(NULL, 1, 1, NULL);
-std::vector<ContextCamera> PXD::contextCameras = std::vector<ContextCamera>();
-ContextCamera PXD::contextCamera_1 = ContextCamera();
-ContextCamera PXD::contextCamera_2 = ContextCamera();
 std::ofstream* PXD::f_irTimestamps = NULL;
-std::ofstream* PXD::f_context1Timestamps = NULL;
-std::ofstream* PXD::f_context2Timestamps = NULL;
 
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
 {
@@ -137,76 +130,15 @@ void PXD::recordFrames(int videoPeriod) {
 				ReleaseSemaphore(ghSemaphore, 1, NULL);
 				//finishedWithSaving = true;
 			}
-
-			ReleaseSemaphore(context1_semaphore, 1, NULL);
-			ReleaseSemaphore(context2_semaphore, 1, NULL);
 		}
 	}
 	finishedWithSaving = true;
 	finishedWithContext = true;
 
-	ReleaseSemaphore(context1_semaphore, 1, NULL);
-	ReleaseSemaphore(context2_semaphore, 1, NULL);
-
 	pxd_goUnLive(1);
 	/*for (int i = 0; i < 400; i++) {
 		std::cout << "  I: " << i << "\tTime: " << frameTimestamps[i] << "\n";
 	}*/
-}
-
-void PXD::contextOneSnapper() {
-	/*
-	auto now = std::chrono::high_resolution_clock::now();
-	auto last = now;
-	auto duration = now.time_since_epoch();
-	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-
-	int div = 0;
-
-	WaitForSingleObject(context1_semaphore, INFINITE);
-	while (!finishedWithContext) {
-		div = contextCamera_1.snap();
-		// Save frame timestamp
-		if (div == 0) {
-			last = now;
-			now = std::chrono::high_resolution_clock::now();
-			duration = now.time_since_epoch();
-			millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-			*f_context1Timestamps << millis << "\t";
-			duration = now - last;
-			millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-			*f_context1Timestamps << millis << "\n";
-		}
-
-		WaitForSingleObject(context1_semaphore, INFINITE);
-	}
-	*/
-}
-void PXD::contextTwoSnapper() {
-	auto now = std::chrono::high_resolution_clock::now();
-	auto last = now;
-	auto duration = now.time_since_epoch();	
-	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-
-	int div = 0;
-
-	WaitForSingleObject(context2_semaphore, INFINITE);
-	while (!finishedWithContext) {
-		div = contextCamera_2.snap();
-		// Save frame timestamp
-		if (div == 0) {
-			last = now;
-			now = std::chrono::high_resolution_clock::now();
-			duration = now.time_since_epoch();
-			millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-			*f_context2Timestamps << millis << "\t";
-			duration = now - last;
-			millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-			*f_context2Timestamps << millis << "\n";
-		}
-
-		//WaitForSingleObject(context2_semaphore, INFINITE);
-	}
 }
 
 void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
@@ -276,53 +208,16 @@ int PXD::video(int frameCount, bool useSeconds, bool enableContext) {
 		frameTimestamps[i] = 0;
 	}
 
-	// Don't need to create folder, it will be created from FINIS-Console
-	// TODO this functionality will need to be refactored during the script testing
-
-	// Check if context cameras are enabled
-	if (enableContext) {
-		// Update context cameras working directory
-		for (int i = 0; i < contextCameras.size(); i++) {
-			contextCameras[i].setFilePath(folderPath);
-		}
-		contextCamera_1.setFilePath(folderPath);
-		contextCamera_2.setFilePath(folderPath);
-		std::cout << "Folder path: *" << folderPath << "*\n";
-		contextCamera_1.setDivisor(1);
-		contextCamera_2.setDivisor(1);
-	}
-	else {
-		finishedWithContext = true;
-	}
 	
 	// Create semaphore object for syncronizing saving
 	if (firstHandleRun) {
 		CloseHandle(ghSemaphore);
-		CloseHandle(context1_semaphore);
-		CloseHandle(context2_semaphore);
 		firstHandleRun = false;
 	}
-	ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
-	std::cout << "intital decrement\n";
-	WaitForSingleObject(ghSemaphore, INFINITE);
-
-	context1_semaphore = CreateSemaphore(NULL, 1, 1, NULL);
-	std::cout << "intital decrement\n";
-	WaitForSingleObject(context1_semaphore, INFINITE);
-
-	context2_semaphore = CreateSemaphore(NULL, 1, 1, NULL);
-	std::cout << "intital decrement\n";
-	WaitForSingleObject(context2_semaphore, INFINITE);
-
-	std::thread context1(contextOneSnapper);
-	std::thread context2(contextTwoSnapper);
+	ghSemaphore = CreateSemaphore(NULL, 0, 1, NULL);
 
 	// Create the file to store the IR camera timestamps
 	f_irTimestamps = new std::ofstream((folderPath + "/ir_timestamps.txt").c_str());
-	if (enableContext) {
-		f_context1Timestamps = new std::ofstream((folderPath + "/context1_timestamps.txt").c_str());
-		f_context2Timestamps = new std::ofstream((folderPath + "/context2_timestamps.txt").c_str());
-	}
 
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
@@ -344,8 +239,6 @@ int PXD::video(int frameCount, bool useSeconds, bool enableContext) {
 	std::cout << " waiting for save thread\n";
 	saveThread.join();
 	std::cout << " save thread joined\n";
-	context1.join();
-	context2.join();
 
 	/*
 	std::cout << "Outputing times from buffer:\n";
@@ -356,30 +249,12 @@ int PXD::video(int frameCount, bool useSeconds, bool enableContext) {
 
 	// Close semaphore
 	CloseHandle(ghSemaphore);
-	CloseHandle(context1_semaphore);
-	CloseHandle(context2_semaphore);
 
 	// Close files
 	f_irTimestamps->close();
 	delete f_irTimestamps;
-	if (enableContext) {
-		f_context1Timestamps->close();
-		f_context2Timestamps->close();
-		delete f_context1Timestamps;
-		delete f_context2Timestamps;
-	}
 
 	return 0;
-}
-
-void PXD::addContextCamera(ContextCamera &camera) {
-	contextCameras.push_back(camera);
-}
-void PXD::setContextCamera1(ContextCamera &camera) {
-	contextCamera_1 = camera;
-}
-void PXD::setContextCamera2(ContextCamera &camera) {
-	contextCamera_2 = camera;
 }
 
 int PXD::openPXD() {
