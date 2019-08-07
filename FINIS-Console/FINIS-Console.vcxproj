@@ -174,6 +174,7 @@
     <ClInclude Include="XCLIB\xcliball.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="constants.cpp" />
     <ClCompile Include="contextCamera.cpp" />
     <ClCompile Include="createDirectoryRecursively.cpp" />
     <ClCompile Include="FINIS-Console.cpp" />

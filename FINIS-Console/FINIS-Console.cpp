@@ -74,7 +74,7 @@ void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* im
 /* Function to handle recording of data */
 void recordData(ContextCamera* context, ContextCamera* aBand, PXD* pxd, IMU* imu) {
 	// Determine folder that will be saved to
-
+	std::string baseSavePath = createBaseSavePath("C:/FINIS/testing/Video");
 
 	// Spawn thread for context
 

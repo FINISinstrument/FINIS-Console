@@ -70,6 +70,7 @@
     <ClCompile Include="PXD.cpp" />
     <ClCompile Include="contextCamera.cpp" />
     <ClCompile Include="createDirectoryRecursively.cpp" />
+    <ClCompile Include="constants.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IMU.h">
