@@ -382,24 +382,6 @@ void PXD::setContextCamera2(ContextCamera &camera) {
 	contextCamera_2 = camera;
 }
 
-std::string PXD::createFolder() {
-	/*
-	// Get directory to save images to
-	dateTime = getDateTime();
-	folderPath = baseVideoPath + dateTime;
-	// Create directory
-	CreateDirectoryA(folderPath.c_str(), NULL);
-	std::cout << GetLastError() << "\n";
-
-	return folderPath;
-	*/
-	return createBaseSavePath(baseVideoPath);
-}
-
-std::string PXD::getFolderPath() {
-	return folderPath;
-}
-
 int PXD::openPXD() {
 	return pxd_PIXCIopen("", "", "C:/Users/FINIS/source/repos/FINIS-Console/FINIS-Console/Resources/XCAPVideoSetup16Bit30Hz.fmt");
 }

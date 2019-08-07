@@ -182,7 +182,7 @@ int main() {
 				int frameCount;
 				std::cin >> frameCount;
 
-				std::string filePath = pxd.createFolder();
+				std::string filePath = createBaseSavePath();
 				imu.setFilePath(filePath);
 				imu.startAsynchData();
 				pxd.video(frameCount, false, true);
@@ -208,7 +208,7 @@ int main() {
 				std::cout << "Enter time to record (in seconds): ";
 				std::cin >> timeToRecord;
 
-				std::string filePath = pxd.createFolder();
+				std::string filePath = createBaseSavePath();
 				imu.setFilePath(filePath);
 
 				std::cout << "Press enter to begin...";
@@ -259,7 +259,7 @@ int main() {
 				std::cout << "Enter time to record (in seconds): ";
 				std::cin >> timeToRecord;
 
-				std::string filePath = pxd.createFolder();
+				std::string filePath = createBaseSavePath();
 				imu.setFilePath(filePath);
 
 				std::cout << "Press enter to begin...";

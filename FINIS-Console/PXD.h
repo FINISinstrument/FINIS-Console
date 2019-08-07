@@ -30,9 +30,6 @@ class PXD {
 		void setContextCamera1(ContextCamera &camera);
 		void setContextCamera2(ContextCamera &camera);
 		void setIMU(IMU *imu);
-
-		std::string getFolderPath();
-		std::string createFolder();
 	private:
 		int openPXD();
 
