@@ -115,7 +115,7 @@ void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU*
 
 	// Signal everything to stop
 	ReleaseSemaphore(semaphore_imu, 1, NULL);
-	contextComplete = false;
+	contextComplete = true;
 
 	// Join threads
 	for (unsigned int i = 0; i < threads.size(); i++) {
@@ -125,6 +125,7 @@ void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU*
 	// Close semaphores
 	CloseHandle(semaphore_context1);
 	CloseHandle(semaphore_context2);
+	CloseHandle(semaphore_imu);
 }
 
 int main() {
@@ -164,6 +165,7 @@ int main() {
 		std::cout << "  8: Vehicle run (IR, IMU), timed with seconds\n";
 		std::cout << "  9: Flat field test (IR)\n";
 		std::cout << " 10: Single calibration run (IR)\n";
+		std::cout << " 11: Refactored test\n";
 		std::cout << "Enter a cmd:";;
 		std::cin >> cmd;
 		std::cout << "\n";
@@ -391,6 +393,15 @@ int main() {
 				}
 				
 				pxd_goLive(1, 1);
+				break;
+			}
+			case 11: {
+				std::cout << "Enter seconds to capture: ";
+				int frameCount;
+				std::cin >> frameCount;
+
+				recordData(&context1, &context2, &pxd, &imu, frameCount, true);
+				//recordData(nullptr, nullptr, &pxd, nullptr, frameCount, true);
 				break;
 			}
 			default: { //print out all the options for keystrokes
