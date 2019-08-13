@@ -71,10 +71,55 @@ void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* im
 	script.close();
 }
 
+void createLogFile(std::string basePath, Vimba* const vimba, int timeRecording, bool useSeconds) {
+	// Create log file
+	std::ofstream logFile = std::ofstream((basePath + "/trial_data.txt").c_str());
+
+	// Create temporary variables
+	std::string user_str;
+	int user_int;
+
+	// Get user input for different values
+	std::cout << "Enter location: ";
+	std::cin >> user_str;
+	logFile << "Location: " << user_str << "\n";
+
+	std::cout << "Enter speed: ";
+	std::cin >> user_str;
+	logFile << "Speed:    " << user_str << "\n";
+
+	std::cout << "Enter distance to scene: ";
+	std::cin >> user_str;
+	logFile << "Distance: " << user_str << "\n";
+
+	std::cout << "Enter trial number: ";
+	std::cin >> user_str;
+	logFile << "Trial No: " << user_str << "\n";
+
+	logFile << "Time recording: " << timeRecording << "\n";
+	logFile << "Using seconds:  " << (useSeconds ? "TRUE" : "FALSE") << "\n";
+
+	logFile << "Exposure: " << vimba->getExposure() << "\n";
+	logFile << "Frame Rate: " << vimba->getFramerate() << "\n";
+
+	// Close log file
+	logFile.close();
+
+	// Wait for user input
+	std::cout << "Press enter to begin...";
+	std::cin.ignore();
+	std::cin.ignore();
+}
+
 /* Function to handle recording of data */
-void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU* imu, int duration, bool useSeconds) {
+void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU* imu, Vimba* vimba, int duration, bool useSeconds, bool useLogFile) {
 	// Determine folder that will be saved to
 	std::string baseSavePath = createBaseSavePath("C:/FINIS/testing/Video");
+
+	// Create and write log file if desired
+	if (useLogFile) {
+		createLogFile(baseSavePath, vimba, duration, useSeconds);
+	}
 
 	std::atomic<bool> contextComplete = false;
 
@@ -201,69 +246,25 @@ int main() {
 
 				break;
 			}
-					/*
 			case 6: {
-				std::cout << "Current framerate is " << vimba.getFramerate() << "\n";
-				std::cout << "Max framerate is " << vimba.getMaxFramerate() << "\n";
-				float framerate;
-				std::cout << "Enter new framerate: ";
-				std::cin >> framerate;
-				vimba.updateFramerate(framerate);
-
-				break;
-			}
-			*/
-			case 6: {
+				// Full recording.
+				// Use frames, do not create log file
 				std::cout << "Enter frame count: ";
-				int frameCount;
-				std::cin >> frameCount;
+				int duration;
+				std::cin >> duration;
 
-				std::string filePath = createBaseSavePath();
-				imu.setFilePath(filePath);
-				imu.startAsynchData();
-				pxd.video(frameCount, false, true);
-				imu.stopAsynchData();
-				
+				recordData(&context1, &context2, &pxd, &imu, &vimba, duration, false, false);
+
 				break;
 			}
 			case 7: {
-				std::string location;
-				std::string speed;
-				std::string distance;
-				std::string trial;
-				int timeToRecord;
-
-				std::cout << "Enter location: ";
-				std::cin >> location;
-				std::cout << "Enter speed: ";
-				std::cin >> speed;
-				std::cout << "Enter distance to scene: ";
-				std::cin >> distance;
-				std::cout << "Enter trial number: ";
-				std::cin >> trial;
+				// Full recording.
+				// Use seconds, and create log file
 				std::cout << "Enter time to record (in seconds): ";
-				std::cin >> timeToRecord;
+				int duration;
+				std::cin >> duration;
 
-				std::string filePath = createBaseSavePath();
-				imu.setFilePath(filePath);
-
-				std::cout << "Press enter to begin...";
-				std::cin.ignore();
-				std::cin.ignore();
-
-				imu.startAsynchData();
-				pxd.video(timeToRecord, true, true);
-				imu.stopAsynchData();
-
-				// Create file for logging the trial data to
-				std::ofstream loggerFile = std::ofstream((filePath + "/trial_data.txt").c_str());
-				loggerFile << "Location: " << location << "\n";
-				loggerFile << "Speed:    " << speed << "\n";
-				loggerFile << "Distance: " << distance << "\n";
-				loggerFile << "Trial No: " << trial << "\n";
-				loggerFile << "Time recording: " << timeToRecord << "\n";
-				loggerFile << "Exposure: " << vimba.getExposure() << "\n";
-				loggerFile << "Frame Rate: " << vimba.getFramerate() << "\n";
+				recordData(&context1, &context2, &pxd, &imu, &vimba, duration, true, true);
 
 				break;
 			}
@@ -278,44 +279,14 @@ int main() {
 			}
 			*/
 			case 8: {
-				std::string location;
-				std::string speed;
-				std::string distance;
-				std::string trial;
-				int timeToRecord;
-
-				std::cout << "Enter location: ";
-				std::cin >> location;
-				std::cout << "Enter speed: ";
-				std::cin >> speed;
-				std::cout << "Enter distance to scene: ";
-				std::cin >> distance;
-				std::cout << "Enter trial number: ";
-				std::cin >> trial;
+				// Only IR and IMU
+				// Use seconds, and create log file
 				std::cout << "Enter time to record (in seconds): ";
-				std::cin >> timeToRecord;
+				int duration;
+				std::cin >> duration;
 
-				std::string filePath = createBaseSavePath();
-				imu.setFilePath(filePath);
-
-				std::cout << "Press enter to begin...";
-				std::cin.ignore();
-				std::cin.ignore();
-
-				imu.startAsynchData();
-				pxd.video(timeToRecord, true, false);
-				imu.stopAsynchData();
-
-				// Create file for logging the trial data to
-				std::ofstream loggerFile = std::ofstream((filePath + "/trial_data.txt").c_str());
-				loggerFile << "Location: " << location << "\n";
-				loggerFile << "Speed:    " << speed << "\n";
-				loggerFile << "Distance: " << distance << "\n";
-				loggerFile << "Trial No: " << trial << "\n";
-				loggerFile << "Time recording: " << timeToRecord << "\n";
-				loggerFile << "Exposure: " << vimba.getExposure() << "\n";
-				loggerFile << "Frame Rate: " << vimba.getFramerate() << "\n";
-
+				recordData(nullptr, nullptr, &pxd, &imu, &vimba, duration, true, true);
+				
 				break;
 			}
 			case 9: {
@@ -400,7 +371,7 @@ int main() {
 				int frameCount;
 				std::cin >> frameCount;
 
-				recordData(&context1, &context2, &pxd, &imu, frameCount, true);
+				recordData(&context1, &context2, &pxd, &imu, &vimba, frameCount, true, false);
 				//recordData(nullptr, nullptr, &pxd, nullptr, frameCount, true);
 				break;
 			}
