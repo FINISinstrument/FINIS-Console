@@ -18,6 +18,7 @@ std::atomic<bool> PXD::finishedWithContext   = false;
 bool PXD::firstHandleRun = true;
 HANDLE PXD::ghSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
 std::ofstream* PXD::f_irTimestamps = NULL;
+int PXD::stepSize = 1;
 
 PXD::PXD(std::string saveLocation) : PXD(saveLocation, true)
 {
@@ -178,7 +179,7 @@ void PXD::saveFrames(int count, int videoPeriod, bool secondsCount) {
 		CreateDirectoryA((folderPath + "/IR/IR_" + ZeroPadString(folderNumber,3)).c_str(), NULL);
 
 		// Save data
-		for (int i = 0; i < halfBufferSize; i+=10) {
+		for (int i = 0; i < halfBufferSize; i+=stepSize) {
 			// Save frame
 			pxd_saveTiff(1, (folderPath + "/IR/IR_" + ZeroPadString(folderNumber,3) + "/IR_" + ZeroPadString(frameCount + i + 1) + ".tiff").c_str(), (firstHalf * 200) + i + 1, 0, 0, -1, -1, 0, 0);
 			// Save frame timestamp

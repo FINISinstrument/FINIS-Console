@@ -26,6 +26,13 @@ class PXD {
 		int snap(std::string imageName);
 		int video(int frameCount, bool useSeconds, bool enableContext);
 
+		int getStepSize() {
+			return stepSize;
+		};
+
+		void setStepSize(int step) {
+			stepSize = step;
+		};
 		void setFilePath(std::string path) {
 			folderPath = path;
 		};
@@ -45,6 +52,8 @@ class PXD {
 		std::string liveName;
 		std::string dateTime;
 		int imagesCaptured;
+
+		static int stepSize;
 
 		static int halfBufferSize;
 		int loopCount;

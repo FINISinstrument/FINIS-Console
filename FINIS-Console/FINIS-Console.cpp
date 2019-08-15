@@ -71,7 +71,7 @@ void parseScript(std::string scriptPath, Vimba* vimba, Shutter* shutter, IMU* im
 	script.close();
 }
 
-void createLogFile(std::string basePath, Vimba* const vimba, int timeRecording, bool useSeconds) {
+void createLogFile(std::string basePath, Vimba* const vimba, PXD* const pxd, int timeRecording, bool useSeconds) {
 	// Create log file
 	std::ofstream logFile = std::ofstream((basePath + "/trial_data.txt").c_str());
 
@@ -102,6 +102,8 @@ void createLogFile(std::string basePath, Vimba* const vimba, int timeRecording, 
 	logFile << "Exposure: " << vimba->getExposure() << "\n";
 	logFile << "Frame Rate: " << vimba->getFramerate() << "\n";
 
+	logFile << "How many frames saved: " << pxd->getStepSize() << "\n";
+
 	// Close log file
 	logFile.close();
 
@@ -118,7 +120,7 @@ void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU*
 
 	// Create and write log file if desired
 	if (useLogFile) {
-		createLogFile(baseSavePath, vimba, duration, useSeconds);
+		createLogFile(baseSavePath, vimba, pxd, duration, useSeconds);
 	}
 
 	std::atomic<bool> contextComplete = false;
@@ -205,12 +207,13 @@ int main() {
 		std::cout << "  3: Open shutter\n";
 		std::cout << "  4: Close shutter\n";
 		std::cout << "  5: Change exposure (IR)\n";
-		std::cout << "  6: Full recording (IR, 2 context, IMU), timed with frames\n";
-		std::cout << "  7: Full recording (IR, 2 context, IMU), timed with seconds\n";
-		std::cout << "  8: Vehicle run (IR, IMU), timed with seconds\n";
-		std::cout << "  9: Flat field test (IR)\n";
-		std::cout << " 10: Single calibration run (IR)\n";
-		std::cout << " 11: Refactored test\n";
+		std::cout << "  6: Set frame skip (IR)\n";
+		std::cout << "  7: Full recording (IR, 2 context, IMU), timed with frames\n";
+		std::cout << "  8: Full recording (IR, 2 context, IMU), timed with seconds\n";
+		std::cout << "  9: Vehicle run (IR, IMU), timed with seconds\n";
+		std::cout << " 10: Flat field test (IR)\n";
+		std::cout << " 11: Single calibration run (IR)\n";
+		std::cout << " 12: Refactored test\n";
 		std::cout << "Enter a cmd:";;
 		std::cin >> cmd;
 		std::cout << "\n";
@@ -247,6 +250,22 @@ int main() {
 				break;
 			}
 			case 6: {
+				std::cout << "Current frame skip is " << pxd.getStepSize() << "\n";
+				int step;
+				std::cout << "Enter new frame skip step (must be a factor of 200): ";
+				std::cin >> step;
+
+				if (200 % step == 0) {
+					std::cout << "Frame skip updated succesffuly\n";
+					pxd.setStepSize(step);
+				}
+				else {
+					std::cout << "Invalid frame skip value\n";
+				}
+
+				break;
+			}
+			case 7: {
 				// Full recording.
 				// Use frames, do not create log file
 				std::cout << "Enter frame count: ";
@@ -257,13 +276,15 @@ int main() {
 
 				break;
 			}
-			case 7: {
+			case 8: {
 				// Full recording.
 				// Use seconds, and create log file
 				std::cout << "Enter time to record (in seconds): ";
 				int duration;
 				std::cin >> duration;
 
+				// Record every 10th frame from the IMU
+				pxd.setStepSize(10);
 				recordData(&context1, &context2, &pxd, &imu, &vimba, duration, true, true);
 
 				break;
@@ -278,7 +299,7 @@ int main() {
 				break;
 			}
 			*/
-			case 8: {
+			case 9: {
 				// Only IR and IMU
 				// Use seconds, and create log file
 				std::cout << "Enter time to record (in seconds): ";
@@ -289,7 +310,7 @@ int main() {
 				
 				break;
 			}
-			case 9: {
+			case 10: {
 				std::cin.ignore();
 				std::string gasses[2] = { "Methane", "Nitrogen" };
 				std::string cellLengths[3] = { "10.16cm", "25cm", "50cm" };
@@ -335,7 +356,7 @@ int main() {
 				pxd_goLive(1, 1);
 				break;
 			}
-			case 10: {
+			case 11: {
 				std::cin.ignore();
 				
 				std::string path = "C:/FINIS/calibration/ExposureTest/";
@@ -366,7 +387,7 @@ int main() {
 				pxd_goLive(1, 1);
 				break;
 			}
-			case 11: {
+			case 12: {
 				std::cout << "Enter seconds to capture: ";
 				int frameCount;
 				std::cin >> frameCount;
