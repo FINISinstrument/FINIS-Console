@@ -66,11 +66,16 @@
       <Filter>IMU</Filter>
     </ClCompile>
     <ClCompile Include="Vimba.cpp" />
-    <ClCompile Include="Shutter.cpp" />
     <ClCompile Include="PXD.cpp" />
     <ClCompile Include="contextCamera.cpp" />
     <ClCompile Include="createDirectoryRecursively.cpp" />
     <ClCompile Include="constants.cpp" />
+    <ClCompile Include="Shutter.cpp">
+      <Filter>Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Shutter</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IMU.h">
@@ -92,11 +97,19 @@
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="Vimba.h" />
-    <ClInclude Include="Shutter.h" />
     <ClInclude Include="PXD.h" />
     <ClInclude Include="contextCamera.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="createDirectoryRecursively.h" />
+    <ClInclude Include="Shutter.h">
+      <Filter>Shutter</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Shutter</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Shutter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FINIS-Console.rc" />
@@ -107,6 +120,9 @@
     </Filter>
     <Filter Include="Include">
       <UniqueIdentifier>{d712d2bd-a56e-4e79-9bc6-9a770152a2a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shutter">
+      <UniqueIdentifier>{23609951-7905-487b-8aa7-38840c4672e9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

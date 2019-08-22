@@ -13,24 +13,10 @@ class Shutter {
 
 		void parseCommand(std::string command);
 
-		void openShutter();
-		void closeShutter();
-
-		bool isOpen();
+		int openShutter();
+		int closeShutter();
 
 	private:
-		bool portConnected;
-		bool shutterOpen;
-	
-		bool connectPort();
-		void disconnectPort();
-
-		HANDLE hComPort;
-		char cmdBuffer[32];
-		char responseBuffer[32];
-		DWORD numBytesWritten;
-		DWORD numBytesRead;
-
 		int portNumber;
 		int maxPortNumber;
 };

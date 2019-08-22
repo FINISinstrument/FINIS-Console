@@ -1,17 +1,21 @@
 #include "pch.h"
 #include <iostream>
 #include "Shutter.h"
+#include "stdafx.h"
+#include "windows.h"
+#include "string.h"
+#include <string>
+#include "stdio.h"
+#include <iostream>
+#include <chrono>
+
 
 Shutter::Shutter() {
 	portNumber = 7;
 	maxPortNumber = 30;
-
-	portConnected = false;
-	shutterOpen = false;
 }
 
 Shutter::~Shutter() {
-	disconnectPort();
 }
 
 void Shutter::parseCommand(std::string command) {
@@ -37,122 +41,191 @@ void Shutter::parseCommand(std::string command) {
 	}
 }
 
-void Shutter::openShutter() {
-	// If shutter open, don't open again
-	if (shutterOpen) {
-		return;
-	}
-	// If port not connected, attempt to connect
-	// If we can't open the port, fail
-	if (!connectPort()) {
-		return;
-	}
+int Shutter::openShutter() {
+	HANDLE hComPort;
+	char cmdBuffer[32];
+	char responseBuffer[32];
+	DWORD numBytesWritten;
+	DWORD numBytesRead;
 
-	// Attempt to write to buffer
-	cmdBuffer[0] = 0x0D;
-	if (!WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL)) {
-		disconnectPort();
-		return;
-	}
+	printf("Starting open\n");
 
-	// Copy command into buffer
-	strcpy_s(cmdBuffer, "relay on 0");
-	// Append 0x0D to emulate ENTER key
-	cmdBuffer[10] = 0x0D;
-
-	WriteFile(hComPort, cmdBuffer, 11, &numBytesWritten, NULL);
-
-	Sleep(200);
-
-	cmdBuffer[0] = 0x0D;
-	WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL);
-
-	// Copy command into buffer
-	strcpy_s(cmdBuffer, "relay off 0");
-	// Append 0x0D to emulate ENTER key
-	cmdBuffer[11] = 0x0D;
-
-	WriteFile(hComPort, cmdBuffer, 12, &numBytesWritten, NULL);
-
-	shutterOpen = true;
-}
-
-void Shutter::closeShutter() {
-	// If shutter is closed, don't close again
-	if (!shutterOpen) {
-		return;
-	}
-	// If port not connected, attempt to connect
-	// If we can't open the port, fail
-	if (!connectPort()) {
-		return;
-	}
-
-	// Attempt to write to buffer
-	cmdBuffer[0] = 0x0D;
-	if (!WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL)) {
-		disconnectPort();
-		return;
-	}
-
-	// Copy command into buffer
-	strcpy_s(cmdBuffer, "relay on 1");
-	// Append 0x0D to emulate ENTER key
-	cmdBuffer[10] = 0x0D;
-
-	WriteFile(hComPort, cmdBuffer, 11, &numBytesWritten, NULL);
-
-	Sleep(200);
-
-	cmdBuffer[0] = 0x0D;
-	WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL);
-
-	// Copy command into buffer
-	strcpy_s(cmdBuffer, "relay off 1");
-	// Append 0x0D to emulate ENTER key
-	cmdBuffer[11] = 0x0D;
-
-	WriteFile(hComPort, cmdBuffer, 12, &numBytesWritten, NULL);
-
-	shutterOpen = false;
-}
-
-bool Shutter::isOpen() {
-	return shutterOpen;
-}
-
-bool Shutter::connectPort() {
-	// Check if already open
-	if (portConnected) {
-		return portConnected;
-	}
-	// Open handle to COM port.
-	// Handle is needed to send commands and receive results
+	/*
+	Open a handle to the COM port. We need the handle to send commands and
+	receive results.
+	*/
 	wchar_t PortName[14];
-	do {
-		wsprintf(PortName, L"\\\\.\\COM%d", portNumber);
+	wchar_t i = 7;
+
+	wsprintf(PortName, L"\\\\.\\COM%d", 8);
+	hComPort = CreateFile(PortName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+
+	do
+	{
+		CloseHandle(hComPort);
+		printf("Attempting %d\n", (char)i);
+		if (i == 30) {
+			printf("Relay board not connected\n");
+			return -1;
+		}
+		wsprintf(PortName, L"\\\\.\\COM%d", i);
+		i++;
 		hComPort = CreateFile(PortName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
-		portNumber++;
-	} while (hComPort == INVALID_HANDLE_VALUE && portNumber < maxPortNumber);
+	} while (hComPort == INVALID_HANDLE_VALUE);
+	//printf("%d", i - 1);
 
-	// If unable to open any handles, error
-	if (hComPort == INVALID_HANDLE_VALUE) {
-		std::cout << "Error: Unable to open port to shutter\n";
-		portConnected = false;
+	cmdBuffer[0] = 0x0D;
+
+	if (!WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL))
+	{
+		CloseHandle(hComPort);
+		printf("Error: Unable to write to the specified port\n");
+		getchar();
+		return 1;
 	}
-	else {
-		// If no error, port is open
-		portConnected = true;
+	printf("A\n");
+
+	/* Copy the command to the command buffer */
+	strcpy(cmdBuffer, "relay on 0");
+
+	/* Append 0x0D to emulate ENTER key */
+	cmdBuffer[10] = 0x0D;
+
+	/* Write the command to the relay module. Total 11 bytes including 0x0D  */
+	printf("B\n");
+	if (!WriteFile(hComPort, cmdBuffer, 11, &numBytesWritten, NULL))
+	{
+		CloseHandle(hComPort);
+		printf("Error: Unable to write to the specified port\n");
+		getchar();
+		return 1;
+	}
+	printf("C\n");
+	Sleep(200);
+
+	cmdBuffer[0] = 0x0D;
+
+	if (!WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL))
+	{
+		CloseHandle(hComPort);
+		printf("Error: Unable to write to the specified port\n");
+		getchar();
+		return 1;
+	}
+	printf("D\n");
+
+	/* Copy the command to the command buffer */
+	strcpy(cmdBuffer, "relay off 0");
+
+	/* Append 0x0D to emulate ENTER key */
+	cmdBuffer[11] = 0x0D;
+
+	/* Write the command to the relay module. Total 11 bytes including 0x0D  */
+	printf("E\n");
+	if (!WriteFile(hComPort, cmdBuffer, 12, &numBytesWritten, NULL))
+	{
+		CloseHandle(hComPort);
+		printf("Error: Unable to write to the specified port\n");
+		getchar();
+		return 1;
 	}
 
-	return portConnected;
+	printf("F\n");
+	if (hComPort == INVALID_HANDLE_VALUE)
+	{
+		printf("Error: Unable to open the specified port\n");
+		getchar();
+		return 1;
+	}
+	printf("G\n");
+	CloseHandle(hComPort);
+
+	return 0;
 }
 
-void Shutter::disconnectPort() {
-	// Close handle to COM port if it is open
-	if (!portConnected) {
-		return;
+int Shutter::closeShutter() {
+	HANDLE hComPort;
+	char cmdBuffer[32];
+	DWORD numBytesWritten;
+
+
+	/*
+	Open a handle to the COM port. We need the handle to send commands and
+	receive results.
+	*/
+
+	wchar_t PortName[14];
+	wchar_t i = 7;
+
+	do
+	{
+		if (i == 30) {
+			printf("Relay board not connected\n");
+			return -1;
+		}
+		wsprintf(PortName, L"\\\\.\\COM%d", i);
+		i++;
+		hComPort = CreateFile(PortName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+	} while (hComPort == INVALID_HANDLE_VALUE);
+	//printf("%d", i - 1);
+
+
+	cmdBuffer[0] = 0x0D;
+
+	if (!WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL))
+	{
+		CloseHandle(hComPort);
+		printf("Error: Unable to write to the specified port\n");
+		getchar();
+		return 1;
 	}
-	// CloseHandle returns a nonzero value if successful
-	portConnected = !CloseHandle(hComPort);
+
+	/* Copy the command to the command buffer */
+	strcpy(cmdBuffer, "relay on 1");
+
+	/* Append 0x0D to emulate ENTER key */
+	cmdBuffer[10] = 0x0D;
+
+	/* Write the command to the relay module. Total 11 bytes including 0x0D  */
+
+	if (!WriteFile(hComPort, cmdBuffer, 11, &numBytesWritten, NULL))
+	{
+		CloseHandle(hComPort);
+		printf("Error: Unable to write to the specified port\n");
+		getchar();
+		return 1;
+	}
+
+	Sleep(200);
+
+
+	cmdBuffer[0] = 0x0D;
+
+	if (!WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL))
+	{
+		CloseHandle(hComPort);
+		printf("Error: Unable to write to the specified port\n");
+		getchar();
+		return 1;
+	}
+
+	/* Copy the command to the command buffer */
+	strcpy(cmdBuffer, "relay off 1");
+
+	/* Append 0x0D to emulate ENTER key */
+	cmdBuffer[11] = 0x0D;
+
+	/* Write the command to the relay module. Total 11 bytes including 0x0D  */
+
+	if (!WriteFile(hComPort, cmdBuffer, 12, &numBytesWritten, NULL))
+	{
+		CloseHandle(hComPort);
+		printf("Error: Unable to write to the specified port\n");
+		getchar();
+		return 1;
+	}
+
+	CloseHandle(hComPort);
+
+	return 0;
 }
