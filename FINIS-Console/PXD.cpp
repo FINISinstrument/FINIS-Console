@@ -99,7 +99,7 @@ int PXD::snap(std::string imageName) {
 	pxd_goSnap(1, 1);
 	// Change sleep method?
 	Sleep(50);
-	int saveTiffError = pxd_saveTiff(1, (baseImagePath + imageName + ".tiff").c_str(), 1, 0,0, -1,-1, 0,0);
+	int saveTiffError = pxd_saveTiff(1, (baseImagePath + "/" + imageName + ".tiff").c_str(), 1, 0,0, -1,-1, 0,0);
 	if (saveTiffError < 0) {
 		printf("Error saving image: %s\n", pxd_mesgErrorCode(saveTiffError));
 	}

@@ -77,7 +77,6 @@ void createLogFile(std::string basePath, Vimba* const vimba, PXD* const pxd, int
 
 	// Create temporary variables
 	std::string user_str;
-	int user_int;
 
 	// Get user input for different values
 	std::cout << "Enter location: ";
@@ -326,7 +325,7 @@ int main() {
 						// Attemp to create subfolder
 						CreateDirectoryA((cellPath).c_str(), NULL);
 						std::cout << "BasePath: *" << cellPath << "*\n";
-						float minimum = 1000; // Measured in microseconds
+						float minimum = 3000; // Measured in microseconds
 						float maximum = 33000; // Measured in microseconds
 						float stepSize = 1000; // Meausred in microseconds
 						float frameCount = 10; // Frames to capture per run
@@ -362,7 +361,7 @@ int main() {
 				std::string path = "C:/FINIS/calibration/ExposureTest/";
 				// Attemp to create subfolder
 				CreateDirectoryA((path).c_str(), NULL);
-				float minimum = 1000; // Measured in microseconds
+				float minimum = 3000; // Measured in microseconds
 				float maximum = 33000; // Measured in microseconds
 				float stepSize = 1000; // Meausred in microseconds
 				float frameCount = 10; // Frames to capture per run

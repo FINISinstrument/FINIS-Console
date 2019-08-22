@@ -4,7 +4,7 @@
 
 Shutter::Shutter() {
 	portNumber = 7;
-	maxPortNumber = 20;
+	maxPortNumber = 30;
 
 	portConnected = false;
 	shutterOpen = false;
