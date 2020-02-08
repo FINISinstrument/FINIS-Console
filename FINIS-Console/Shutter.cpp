@@ -72,8 +72,9 @@ int Shutter::openShutter() {
 		i++;
 		hComPort = CreateFile(PortName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
 	} while (hComPort == INVALID_HANDLE_VALUE);
-	//printf("%d", i - 1);
+	printf("%d", i - 1);
 
+	printf("Z\n");
 	cmdBuffer[0] = 0x0D;
 
 	if (!WriteFile(hComPort, cmdBuffer, 1, &numBytesWritten, NULL))

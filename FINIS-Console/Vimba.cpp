@@ -60,6 +60,24 @@ bool Vimba::startCamera() {
 		feature->SetValue(20);
 		camera->GetFeatureByName("SensorTemperatureSetpointSelector", feature);
 		feature->SetValue(1);
+
+		// This seems to remove the vertical jump in the graph
+		camera->GetFeatureByName("NUCMode", feature);
+		feature->SetValue("Off");
+		
+		// Having this off made it wavy
+		camera->GetFeatureByName("DPCMode", feature);
+		feature->SetValue("Off");
+
+		// having this feature off removes the main dip in the dark current vs. exposure time graph
+		camera->GetFeatureByName("SensorTemperatureControlMode", feature);
+		feature->SetValue("Off");
+		
+		/*
+		camera->GetFeatureByName("BCMode", feature);
+		feature->SetValue("Off");
+		*/
+
 		camera->GetFeatureByName("AcquisitionStart", feature);
 		feature->RunCommand();
 	}
@@ -78,6 +96,11 @@ float Vimba::getFramerate() {
 }
 float Vimba::getMaxFramerate() {
 	return 1000000.0 / exposure;
+}
+float Vimba::getTemperature() {
+	camera->GetFeatureByName("DeviceTemperature", feature);
+	double temp;
+	return feature->GetValue(temp );
 }
 
 void Vimba::updateExposure(float exposure) {

@@ -113,9 +113,15 @@ void createLogFile(std::string basePath, Vimba* const vimba, PXD* const pxd, int
 }
 
 /* Function to handle recording of data */
-void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU* imu, Vimba* vimba, int duration, bool useSeconds, bool useLogFile) {
+void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU* imu, Vimba* vimba, int duration, bool useSeconds, bool useLogFile, bool calibration) {
 	// Determine folder that will be saved to
-	std::string baseSavePath = createBaseSavePath("C:/FINIS/testing/Video");
+	std::string baseSavePath;
+	if (!calibration) {
+		std::string baseSavePath = createBaseSavePath("C:/FINIS/testing/Video");
+	}
+	else {
+		std::string baseSavePath = createBaseSavePath("C:/FINIS/calibration/ExposureTest");
+	}
 
 	// Create and write log file if desired
 	if (useLogFile) {
@@ -271,7 +277,7 @@ int main() {
 				int duration;
 				std::cin >> duration;
 
-				recordData(&context1, &context2, &pxd, &imu, &vimba, duration, false, false);
+				recordData(&context1, &context2, &pxd, &imu, &vimba, duration, false, false, false);
 
 				break;
 			}
@@ -284,7 +290,7 @@ int main() {
 
 				// Record every 10th frame from the IMU
 				pxd.setStepSize(10);
-				recordData(&context1, &context2, &pxd, &imu, &vimba, duration, true, true);
+				recordData(&context1, &context2, &pxd, &imu, &vimba, duration, true, true, false);
 
 				break;
 			}
@@ -305,7 +311,7 @@ int main() {
 				int duration;
 				std::cin >> duration;
 
-				recordData(nullptr, nullptr, &pxd, &imu, &vimba, duration, true, true);
+				recordData(nullptr, nullptr, &pxd, &imu, &vimba, duration, true, true, false);
 				
 				break;
 			}
@@ -328,7 +334,7 @@ int main() {
 						float minimum = 3000; // Measured in microseconds
 						float maximum = 33000; // Measured in microseconds
 						float stepSize = 1000; // Meausred in microseconds
-						float frameCount = 10; // Frames to capture per run
+						float frameCount = 200; // Frames to capture per run
 						pxd_goUnLive(1);
 
 						// Wait for user input to change cells
@@ -363,25 +369,58 @@ int main() {
 				CreateDirectoryA((path).c_str(), NULL);
 				float minimum = 3000; // Measured in microseconds
 				float maximum = 33000; // Measured in microseconds
-				float stepSize = 1000; // Meausred in microseconds
-				float frameCount = 10; // Frames to capture per run
+				float stepSize = 10; // Meausred in microseconds
+				float frameCount = 100; // Frames to capture per run
 				pxd_goUnLive(1);
+				std::cout << "How many images do you want to take? (max 400)";
+				std::cin >> frameCount;
+				if (frameCount > 400)
+					frameCount = 400;
+				std::cout << "Step size in microseconds? (default 1000)";
+				std::cin >> stepSize;
 
-				for (float i = minimum; i <= maximum; i += stepSize) {
+				std::cout << "The current temperature is: " << vimba.getTemperature() << "\n";
+
+				//pxd_goLiveSeq(1, 1, 401, 1, 1000, 1); // taking garbage images to stabilize camera temperature
+				//while (pxd_goneLive(1, 0));
+
+				for (float i = minimum; i <= maximum; i += stepSize) { // uncomment to run in forward order
+				//for (float i = maximum; i >= minimum; i -= stepSize) {   // uncomment to run in reverse order
 					std::cout << "Aquiring at " << i << " microsecond exposure\n";
 					// Change exposure
 					vimba.updateExposure(i);
-					// Take image
+
+					// Setup variables
+					uint32_t time;
+					uint32_t last_time = 0;
+					uint32_t frameTimestamps[400];
+					uint32_t workingIndex = 0;
+
+					// Take images
 					std::cout << "Starting capture\n";
 					pxd_goLiveSeq(1, 1, 401, 1, frameCount, 1);
-					// Wait for completion
-					while (pxd_goneLive(1, 0)) { Sleep(0); }
+
+					// Wait for completion and get timestamps
+					while (pxd_goneLive(1, 0)) {
+						time = pxd_capturedSysTicks(1);
+
+						//std::cout << "I: " << i << "\tTime: " << time << "\n";
+						if (time != last_time) {
+							frameTimestamps[workingIndex++] = time;
+							last_time = time;
+						}
+					}
 					// Save images
 					std::cout << "Saving images\n";
+					std::ofstream f_irTimestamps ((path + "/ir_timestamps_" + ZeroPadString(i,5) + ".txt").c_str());
 					for (int j = 1; j <= frameCount; j++) {
 						pxd_saveTiff(1, (path + ZeroPadString(i, 5) + "_" + ZeroPadString(j, 2) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
+						f_irTimestamps << j << "\t" << frameTimestamps[j] << "\n";
 					}
+					f_irTimestamps.close();
+					//recordData(nullptr, nullptr, &pxd, nullptr, &vimba, frameCount, false, false, true);
 				}
+				std::cout << "The current temperature is: " << vimba.getTemperature() << "\n";
 				
 				pxd_goLive(1, 1);
 				break;
@@ -391,7 +430,7 @@ int main() {
 				int frameCount;
 				std::cin >> frameCount;
 
-				recordData(&context1, &context2, &pxd, &imu, &vimba, frameCount, true, false);
+				recordData(&context1, &context2, &pxd, &imu, &vimba, frameCount, true, false, false);
 				//recordData(nullptr, nullptr, &pxd, nullptr, frameCount, true);
 				break;
 			}
@@ -402,6 +441,6 @@ int main() {
 			}
 		}
 	} // End while
-	std::cout << "Hello World!\n";
+	std::cout << "Goodbye World!\n";
 
 }

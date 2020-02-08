@@ -14,6 +14,7 @@ class Vimba {
 		float getExposure();
 		float getFramerate();
 		float getMaxFramerate();
+		float getTemperature();
 
 		void updateExposure(float exposureTime);
 		void updateFramerate(float frameRate);
