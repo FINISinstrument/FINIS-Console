@@ -30,7 +30,7 @@ Vimba::~Vimba() {
  * This function can be called asyncronously so that other startup behavior can occur
  * Returns TRUE upon successful completion
  */
-bool Vimba::startCamera() {
+bool Vimba::startCamera(std::string configuration) {
 	// Shutdown system in case it was not properly closed
 	sys.Shutdown();
 
@@ -43,40 +43,74 @@ bool Vimba::startCamera() {
 
 		// Set features for the camera
 		sys.OpenCameraByID("DEV_64AA2C448F1F2349", VmbAccessModeFull, camera);
-		camera->GetFeatureByName("ExposureTime", feature);
-		//feature->SetValue(33334.0);
-		exposure = 8000.0;
-		feature->SetValue(exposure);
-		//camera->GetFeatureByName("AcquisitionFrameRate", feature);
-		framerate = 30.0;
-		//feature->SetValue(framerate);
+		// If configuration exists, open according to config
+		if (configuration.size() != 0) {
+			std::fstream configFile(configuration.c_str());
 
-		//camera->GetFeatureByName("TriggerSource", feature);
-		//feature->SetValue("FixedRate");
+			// Loop through lines of file
+			std::string featureName;
+			std::string featureValue;
+			float featureFloatValue;
 
-		camera->GetFeatureByName("SensorGain", feature);
-		feature->SetValue("Gain1");
-		camera->GetFeatureByName("SensorTemperatureSetpointValue", feature);
-		feature->SetValue(20);
-		camera->GetFeatureByName("SensorTemperatureSetpointSelector", feature);
-		feature->SetValue(1);
+			// Read all values
+			while (configFile >> featureName) {
+				configFile >> featureValue;
 
-		// This seems to remove the vertical jump in the graph
-		camera->GetFeatureByName("NUCMode", feature);
-		feature->SetValue("Off");
-		
-		// Having this off made it wavy
-		camera->GetFeatureByName("DPCMode", feature);
-		feature->SetValue("Off");
+				camera->GetFeatureByName(featureName.c_str(), feature);
 
-		// having this feature off removes the main dip in the dark current vs. exposure time graph
-		camera->GetFeatureByName("SensorTemperatureControlMode", feature);
-		feature->SetValue("Off");
-		
-		/*
-		camera->GetFeatureByName("BCMode", feature);
-		feature->SetValue("Off");
-		*/
+				std::cout << featureName << "\t" << featureValue << "\n";
+
+				// Try converting to float
+				try {
+					featureFloatValue = std::stof(featureValue);
+					// Float found and converted
+					feature->SetValue(featureFloatValue);
+				}
+				catch (const std::exception& e){
+					// No conversion, is string
+					feature->SetValue(featureValue.c_str());
+				}
+			}
+
+			configFile.close();
+		}
+		// If no configuration specified, run this
+		else {
+			camera->GetFeatureByName("ExposureTime", feature);
+			//feature->SetValue(33334.0);
+			exposure = 8000.0;
+			feature->SetValue(exposure);
+			//camera->GetFeatureByName("AcquisitionFrameRate", feature);
+			framerate = 30.0;
+			//feature->SetValue(framerate);
+
+			//camera->GetFeatureByName("TriggerSource", feature);
+			//feature->SetValue("FixedRate");
+
+			camera->GetFeatureByName("SensorGain", feature);
+			feature->SetValue("Gain1");
+			camera->GetFeatureByName("SensorTemperatureSetpointValue", feature);
+			feature->SetValue(20);
+			camera->GetFeatureByName("SensorTemperatureSetpointSelector", feature);
+			feature->SetValue(1);
+
+			// This seems to remove the vertical jump in the graph
+			camera->GetFeatureByName("NUCMode", feature);
+			feature->SetValue("Off");
+
+			// Having this off made it wavy
+			camera->GetFeatureByName("DPCMode", feature);
+			feature->SetValue("Off");
+
+			// having this feature off removes the main dip in the dark current vs. exposure time graph
+			camera->GetFeatureByName("SensorTemperatureControlMode", feature);
+			feature->SetValue("Off");
+
+			/*
+			camera->GetFeatureByName("BCMode", feature);
+			feature->SetValue("Off");
+			*/
+		}
 
 		camera->GetFeatureByName("AcquisitionStart", feature);
 		feature->RunCommand();

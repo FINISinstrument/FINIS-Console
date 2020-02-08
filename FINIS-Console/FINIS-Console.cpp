@@ -182,7 +182,7 @@ void recordData(ContextCamera* context1, ContextCamera* context2, PXD* pxd, IMU*
 
 int main() {
 	Vimba vimba = Vimba();
-	vimba.startCamera();
+	vimba.startCamera(vimba_config_path);
 
 	Shutter shutter = Shutter();
 	
@@ -219,6 +219,7 @@ int main() {
 		std::cout << " 10: Flat field test (IR)\n";
 		std::cout << " 11: Single calibration run (IR)\n";
 		std::cout << " 12: Refactored test\n";
+		std::cout << " 13: Reload vimba config\n";
 		std::cout << "Enter a cmd:";;
 		std::cin >> cmd;
 		std::cout << "\n";
@@ -363,10 +364,14 @@ int main() {
 			}
 			case 11: {
 				std::cin.ignore();
-				
+
 				std::string path = "C:/FINIS/calibration/ExposureTest/";
+				std::string images_directory = "images/";
+				std::string timestamps_directory = "timestamps/";
 				// Attemp to create subfolder
 				CreateDirectoryA((path).c_str(), NULL);
+				CreateDirectoryA((path + images_directory).c_str(), NULL);
+				CreateDirectoryA((path + timestamps_directory).c_str(), NULL);
 				float minimum = 3000; // Measured in microseconds
 				float maximum = 33000; // Measured in microseconds
 				float stepSize = 10; // Meausred in microseconds
@@ -383,6 +388,9 @@ int main() {
 
 				//pxd_goLiveSeq(1, 1, 401, 1, 1000, 1); // taking garbage images to stabilize camera temperature
 				//while (pxd_goneLive(1, 0));
+
+				// Copy configuration file to output directory
+				copyFile(vimba_config_path.c_str(), (path+"vimba_config.txt").c_str());
 
 				for (float i = minimum; i <= maximum; i += stepSize) { // uncomment to run in forward order
 				//for (float i = maximum; i >= minimum; i -= stepSize) {   // uncomment to run in reverse order
@@ -412,9 +420,9 @@ int main() {
 					}
 					// Save images
 					std::cout << "Saving images\n";
-					std::ofstream f_irTimestamps ((path + "/ir_timestamps_" + ZeroPadString(i,5) + ".txt").c_str());
+					std::ofstream f_irTimestamps ((path + timestamps_directory + "/ir_timestamps_" + ZeroPadString(i,5) + ".txt").c_str());
 					for (int j = 1; j <= frameCount; j++) {
-						pxd_saveTiff(1, (path + ZeroPadString(i, 5) + "_" + ZeroPadString(j, 2) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
+						pxd_saveTiff(1, (path + images_directory + ZeroPadString(i, 5) + "_" + ZeroPadString(j, 2) + ".tiff").c_str(), j, 0, 0, -1, -1, 0, 0);
 						f_irTimestamps << j << "\t" << frameTimestamps[j] << "\n";
 					}
 					f_irTimestamps.close();
@@ -433,6 +441,10 @@ int main() {
 				recordData(&context1, &context2, &pxd, &imu, &vimba, frameCount, true, false, false);
 				//recordData(nullptr, nullptr, &pxd, nullptr, frameCount, true);
 				break;
+			}
+			case 13: {
+				// Reload configuration of vimba
+				vimba.startCamera(vimba_config_path);
 			}
 			default: { //print out all the options for keystrokes
 				std::cout << "Not a valid argument type\n";

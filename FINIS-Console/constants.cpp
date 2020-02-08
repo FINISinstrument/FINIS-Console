@@ -64,3 +64,11 @@ std::wstring s2w(std::string s) {
 
 	return wide;
 }
+
+bool copyFile(const char *SRC, const char* DEST)
+{
+	std::ifstream src(SRC);
+	std::ofstream dest(DEST);
+	dest << src.rdbuf();
+	return src && dest;
+}

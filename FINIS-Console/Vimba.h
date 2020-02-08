@@ -9,7 +9,7 @@ class Vimba {
 		Vimba();
 		~Vimba();
 
-		bool startCamera();
+		bool startCamera(std::string configuration);
 
 		float getExposure();
 		float getFramerate();
@@ -24,6 +24,8 @@ class Vimba {
 		AVT::VmbAPI::CameraPtr camera;
 		AVT::VmbAPI::FeaturePtr feature;
 		bool cameraConnected;
+
+		const std::string configurationPath = "C:/FINIS/configuration";
 
 		float exposure;
 		float framerate;
